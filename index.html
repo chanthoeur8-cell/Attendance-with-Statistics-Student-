@@ -1114,7 +1114,7 @@ async function sendToTelegram() {
     let absentCount = document.getElementById('cA').innerText;
     let total = document.getElementById('cT').innerText;
 
-    let message = `📊 **របាយការណ៍សិស្សវត្តមាន និងច្បាប់**\n`;
+    let message = `📊 **របាយការណ៍សិស្សវត្តមាន**\n`;
     message += `📅 កាលបរិច្ឆេទ: ${date}\n`;
     message += `🏫 ថ្នាក់: *${className}*\n`;
     message += `--------------------------\n`;
@@ -1283,6 +1283,9 @@ function addNewStudent() {
     
     displayNewStudents();
     
+    // ផ្ញើ notification ភ្លាមទៅ Telegram
+    sendNewStudentNotification(name, className, gender, date);
+    
     alert(`✅ បានបន្ថែម "${name}" ទៅក្នុងថ្នាក់ "${className}" រួចរាល់!\n\nសិស្សនេះនឹងបង្ហាញក្នុងផ្នែក Attendance ភ្លាមៗ។`);
 }
 
@@ -1306,6 +1309,9 @@ function displayNewStudents() {
 
 function removeNewStudent(index) {
     const student = newStudentsArray[index];
+    
+    // ផ្ញើ notification ទៅ Telegram មុនពេលលុប
+    sendDeleteStudentNotification(student.name, student.class, 'new');
     
     // លុបពី studentData
     if (studentData[student.class]) {
@@ -1357,6 +1363,9 @@ function addLeftStudent() {
     document.getElementById('leftStudentDate').value = '';
     
     displayLeftStudents();
+    
+    // ផ្ញើ notification ភ្លាមទៅ Telegram
+    sendLeftStudentNotification(student.name, student.class, date);
 }
 
 function displayLeftStudents() {
@@ -1378,6 +1387,11 @@ function displayLeftStudents() {
 }
 
 function removeLeftStudent(index) {
+    const student = leftStudentsArray[index];
+    
+    // ផ្ញើ notification ទៅ Telegram មុនពេលលុប
+    sendDeleteStudentNotification(student.name, student.class, 'left');
+    
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     document.getElementById('totalStudents').value = currentTotal + 1;
     
@@ -1434,6 +1448,101 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
     document.getElementById('leftStudentSelect').value = '';
     document.getElementById('leftStudentDate').value = '';
 });
+
+// ========== INSTANT TELEGRAM NOTIFICATIONS ==========
+
+async function sendNewStudentNotification(name, className, gender, date) {
+    const chatId = '-1003814592979';
+    const today = new Date().toLocaleDateString('km-KH');
+    const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    
+    let message = `✅ *សិស្សចូលថ្មី*\n\n`;
+    message += `👤 *ឈ្មោះ:* ${name}\n`;
+    message += `🏫 *ថ្នាក់:* ${className}\n`;
+    message += `⚧️ *ភេទ:* ${gender === 'M' ? 'ប្រុស' : 'ស្រី'}\n`;
+    message += `📅 *ថ្ងៃចូល:* ${date}\n`;
+    message += `⏰ *ពេលកត់ត្រា:* ${time} (${today})`;
+
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: message,
+                parse_mode: 'Markdown'
+            })
+        });
+
+        const result = await response.json();
+        if (result.ok) {
+            console.log('✅ បានផ្ញើ notification សិស្សចូលថ្មីទៅ Telegram!');
+        }
+    } catch (error) {
+        console.error('❌ Error sending new student notification:', error);
+    }
+}
+
+async function sendLeftStudentNotification(name, className, date) {
+    const chatId = '-1003814592979';
+    const today = new Date().toLocaleDateString('km-KH');
+    const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    
+    let message = `❌ *សិស្សឈប់*\n\n`;
+    message += `👤 *ឈ្មោះ:* ${name}\n`;
+    message += `🏫 *ថ្នាក់:* ${className}\n`;
+    message += `📅 *ថ្ងៃឈប់:* ${date}\n`;
+    message += `⏰ *ពេលកត់ត្រា:* ${time} (${today})`;
+
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: message,
+                parse_mode: 'Markdown'
+            })
+        });
+
+        const result = await response.json();
+        if (result.ok) {
+            console.log('✅ បានផ្ញើ notification សិស្សឈប់ទៅ Telegram!');
+        }
+    } catch (error) {
+        console.error('❌ Error sending left student notification:', error);
+    }
+}
+
+async function sendDeleteStudentNotification(name, className, type) {
+    const chatId = '-1003814592979';
+    const today = new Date().toLocaleDateString('km-KH');
+    const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    
+    let message = `🗑️ *លុបសិស្សចេញ*\n\n`;
+    message += `👤 *ឈ្មោះ:* ${name}\n`;
+    message += `🏫 *ថ្នាក់:* ${className}\n`;
+    message += `⏰ *ពេលលុប:* ${time} (${today})`;
+
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: message,
+                parse_mode: 'Markdown'
+            })
+        });
+
+        const result = await response.json();
+        if (result.ok) {
+            console.log('✅ បានផ្ញើ notification លុបសិស្សទៅ Telegram!');
+        }
+    } catch (error) {
+        console.error('❌ Error sending delete notification:', error);
+    }
+}
 
 async function sendStudentChangesToTelegram(report) {
     const chatId = '-1003814592979';
