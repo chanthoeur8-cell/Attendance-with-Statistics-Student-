@@ -653,7 +653,7 @@
                 <div id="studentContainer"></div>
 
                 <div class="bottom-actions">
-                    <button class="btn-main btn-telegram" onclick="sendToTelegram()">📤 ផ្ញើទៅ Telegram</button>
+                    <button class="btn-main btn-telegram" onclick="sendAttendanceToTelegram()">📤 ផ្ញើទៅ Telegram</button>
                     <button class="btn-main btn-excel" onclick="exportToExcel()">📥 រក្សាទុកជា Excel</button>
                 </div>
             </div>
@@ -813,13 +813,6 @@
 </div>
 
 <script>
-// ========== GLOBAL VARIABLES ==========
-let reports = [];
-let newStudentsArray = [];
-let leftStudentsArray = [];
-let editingIndex = -1;
-let currentClass = '';
-
 // ========== ATTENDANCE SYSTEM DATA ==========
 const studentData = {
     'ថ្នាក់មត្តេយ្យកម្រិតមធ្យម(ព្រឹក)': [
@@ -957,76 +950,88 @@ const studentData = {
 };
 
 const classChatIds = {
-    'ថ្នាក់មត្តេយ្យកម្រិតមធ្យម(ព្រឹក)': '-4845440768',
-    'ថ្នាក់មត្តេយ្យកម្រិតមធ្យម(រសៀល)': '-4845440768',
-    'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់(ព្រឹក)': '-4828804361',
-    'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់(រសៀល)': '-4828804361', 
-    'ថ្នាក់ទី១(ព្រឹក)': '-4936041559',
-    'ថ្នាក់ទី១(រសៀល)': '-4936041559',
-    'ថ្នាក់ទី២(ព្រឹក)': '-4953929888',
-    'ថ្នាក់ទី២(រសៀល)': '-4953929888',
-    'ថ្នាក់ទី៣(រសៀល)': '-4872387682',
-    'ថ្នាក់ទី៤ ៥': '-4844052526',
-    'Fount1 mooning': '-4986675448',
-    'Fount1 Evening': '-4986675448',
-    'Nursery(ព្រឹក)': '-4924159874',
-    'Nursery(រសៀល)': '-4924159874',
-    'Fount2': '-4871212513',
-    'Fount2(narein)': '-4871212513',
-    'Level1': '-4906276801',
-    'Level2': '-4968404918',
-    'មត្ដេយ្យកម្រិតទាប(ព្រឹក)': '-4835279036',
-    'មត្ដេយ្យកម្រិតទាប(រសៀល)': '-4835279036'
+    'ថ្នាក់មត្តេយ្យកម្រិតមធ្យម(ព្រឹក)': '-1004845440768',
+    'ថ្នាក់មត្តេយ្យកម្រិតមធ្យម(រសៀល)': '-1004845440768',
+    'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់(ព្រឹក)': '-1004828804361',
+    'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់(រសៀល)': '-1004828804361', 
+    'ថ្នាក់ទី១(ព្រឹក)': '-1004936041559',
+    'ថ្នាក់ទី១(រសៀល)': '-1004936041559',
+    'ថ្នាក់ទី២(ព្រឹក)': '-1004953929888',
+    'ថ្នាក់ទី២(រសៀល)': '-1004953929888',
+    'ថ្នាក់ទី៣(រសៀល)': '-1004872387682',
+    'ថ្នាក់ទី៤ ៥': '-1004844052526',
+    'Fount1 mooning': '-1004986675448',
+    'Fount1 Evening': '-1004986675448',
+    'Nursery(ព្រឹក)': '-1004924159874',
+    'Nursery(រសៀល)': '-1004924159874',
+    'Fount2': '-1004871212513',
+    'Fount2(narein)': '-1004871212513',
+    'Level1': '-1004906276801',
+    'Level2': '-1004968404918',
+    'មត្ដេយ្យកម្រិតទាប(ព្រឹក)': '-1004835279036',
+    'មត្ដេយ្យកម្រិតទាប(រសៀល)': '-1004835279036'
 };
 
 const TELEGRAM_BOT_TOKEN = '8501623225:AAGu-F_GHSQ-dLBrEME7eidOpW2yDf3qvXw';
 
-// ========== MAIN TAB SWITCHING ==========
-function switchMainTab(tabName) {
-    // Remove active class from all main tabs
-    document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.main-tab-content').forEach(t => t.classList.remove('active'));
-    
-    // Add active class to selected tab
-    event.target.classList.add('active');
-    document.getElementById(tabName + '-system').classList.add('active');
-    
-    // Initialize content based on tab
-    if (tabName === 'attendance') {
-        initializeAttendanceSystem();
-    } else if (tabName === 'statistics') {
-        loadReports();
-        populateClassDropdowns();
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('reportDate').value = today;
+// Load studentData from localStorage if it exists
+function loadStudentData() {
+    const saved = localStorage.getItem('studentDataMIKIDS');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            // Merge saved data with default data
+            Object.keys(parsed).forEach(className => {
+                studentData[className] = parsed[className];
+            });
+            console.log('✅ Loaded student data from localStorage');
+        } catch (e) {
+            console.error('Error loading student data:', e);
+        }
     }
 }
 
-// ========== ATTENDANCE SYSTEM FUNCTIONS ==========
-function initializeAttendanceSystem() {
-    document.getElementById('attDate').valueAsDate = new Date();
-    const classListDiv = document.getElementById('classList');
-    classListDiv.innerHTML = '';
-    
-    Object.keys(studentData).forEach((className, index) => {
-        const div = document.createElement('div');
-        div.className = `class-item ${index === 0 ? 'active' : ''}`;
-        div.innerText = className;
-        div.onclick = () => selectClass(div, className);
-        classListDiv.appendChild(div);
-    });
-    
-    // Load first class by default
-    const firstClass = Object.keys(studentData)[0];
-    currentClass = firstClass;
-    renderStudents(firstClass);
+// Save studentData to localStorage
+function saveStudentData() {
+    try {
+        localStorage.setItem('studentDataMIKIDS', JSON.stringify(studentData));
+        console.log('💾 Saved student data to localStorage');
+    } catch (e) {
+        console.error('Error saving student data:', e);
+    }
 }
+
+// ========== STATISTICS REPORT DATA ==========
+let reports = [];
+let editingIndex = -1;
+let newStudentsArray = [];
+let leftStudentsArray = [];
+
+// ========== MAIN TAB SWITCHING ==========
+function switchMainTab(tabName) {
+    document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.main-tab-content').forEach(t => t.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById(tabName + '-system').classList.add('active');
+}
+
+// ========== ATTENDANCE SYSTEM FUNCTIONS ==========
+document.getElementById('attDate').valueAsDate = new Date();
+const classListDiv = document.getElementById('classList');
+
+Object.keys(studentData).forEach((className, index) => {
+    const div = document.createElement('div');
+    div.className = `class-item ${index === 0 ? 'active' : ''}`;
+    div.innerText = className;
+    div.onclick = () => selectClass(div, className);
+    classListDiv.appendChild(div);
+});
 
 function selectClass(element, className) {
     document.querySelectorAll('.class-item').forEach(i => i.classList.remove('active'));
     element.classList.add('active');
-    currentClass = className;
-    document.getElementById('displayClass').innerText = "ListName - " + className;
+    document.getElementById('displayClass').innerText = className;
     renderStudents(className);
 }
 
@@ -1062,118 +1067,76 @@ function mark(btn, type) {
     btn.classList.add('active');
     calculateSummary();
 }
-
 function calculateSummary() {
-    document.getElementById('cP').innerText = document.querySelectorAll('.btn-att.present.active').length;
-    document.getElementById('cL').innerText = document.querySelectorAll('.btn-att.permission.active').length;
-    document.getElementById('cA').innerText = document.querySelectorAll('.btn-att.absent.active').length;
-    document.getElementById('cT').innerText = document.querySelectorAll('.student-card').length;
+    const permissionCount = document.querySelectorAll('.btn-att.permission.active').length;
+    const absentCount = document.querySelectorAll('.btn-att.absent.active').length;
+    const totalStudents = document.querySelectorAll('.student-card').length;
+    const presentCount = totalStudents - (permissionCount + absentCount);
+    
+    
+    // ✅ UPDATE UI នៅទីនេះ
+    document.getElementById('cP').innerText = presentCount;
+    document.getElementById('cL').innerText = permissionCount;
+    document.getElementById('cA').innerText = absentCount;
+    document.getElementById('cT').innerText = totalStudents;
 }
 
-function exportToExcel() {
-    const activeClass = document.querySelector('.class-item.active');
-    if(!activeClass) return alert("សូមជ្រើសរើសថ្នាក់ជាមុនសិន!");
+    async function sendToTelegram() {
+    if (!selectedClassName) return alert("⚠️ សូមជ្រើសរើសថ្នាក់!");
     
-    const className = activeClass.innerText;
-    const date = document.getElementById('attDate').value;
-    
-    let csv = "\uFEFFថ្ងៃខែ,ថ្នាក់,ID,ឈ្មោះសិស្ស,ស្ថានភាព\n";
-    
-    document.querySelectorAll('.student-card').forEach((card) => {
-        let status = "-";
-        if(card.querySelector('.btn-att.present').classList.contains('active')) status = "✔️ មក";
-        if(card.querySelector('.btn-att.permission').classList.contains('active')) status = "P ច្បាប់";
-        if(card.querySelector('.btn-att.absent').classList.contains('active')) status = "A អវត្តមាន";
-        
-        const id = card.querySelector('.student-id').innerText;
-        const name = card.getAttribute('data-name');
-        csv += `${date},${className},${id},${name},${status}\n`;
-    });
-    
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `Attendance_${className}_${date}.csv`;
-    link.click();
-}
-
-async function sendToTelegram() {
-    const activeClass = document.querySelector('.class-item.active');
-    if (!activeClass) return alert("សូមជ្រើសរើសថ្នាក់ជាមុនសិន!");
-
-    const className = activeClass.innerText;
-    const chatId = classChatIds[className];
-    
-    if (!chatId) {
-        return alert(`❌ រកមិនឃើញ Chat ID សម្រាប់ថ្នាក់: "${className}"`);
-    }
+    const chatId = classChatIds[selectedClassName] ? classChatIds[selectedClassName].trim() : null;
+    if (!chatId) return alert("⚠️ មិនទាន់មាន Chat ID សម្រាប់ថ្នាក់នេះ!");
 
     const date = document.getElementById('attDate').value;
-    let presentCount = document.getElementById('cP').innerText;
-    let leaveCount = document.getElementById('cL').innerText;
-    let absentCount = document.getElementById('cA').innerText;
-    let total = document.getElementById('cT').innerText;
-
-    let message = `📊 **របាយការណ៍សិស្សវត្តមាន**\n`;
-    message += `📅 កាលបរិច្ឆេទ: ${date}\n`;
-    message += `🏫 ថ្នាក់: *${className}*\n`;
+    const allCards = document.querySelectorAll('.student-card');
+   
+    const permissionCount = document.querySelectorAll('.btn-att.permission.active').length;
+    const absentCount = document.querySelectorAll('.btn-att.absent.active').length;
+    const totalAbsent = permissionCount + absentCount;
+    
+    // ប្តូរមកប្រើ HTML Tags វិញដើម្បីភាពច្បាស់លាស់
+    let message = `<b>📊 របាយការណ៍វត្តមាន</b>\n`;
+    message += `🏫 ថ្នាក់: <b>${selectedClassName}</b>\n`;
+    message += `📅 ថ្ងៃទី: ${date}\n`;
     message += `--------------------------\n`;
     
-    let hasMissingStudents = false;
-    let studentList = "";
-
-    document.querySelectorAll('.student-card').forEach((card) => {
-        let statusText = "";
-        const isLeave = card.querySelector('.btn-att.permission').classList.contains('active');
-        const isAbsent = card.querySelector('.btn-att.absent').classList.contains('active');
-        
-        if (isLeave) statusText = " ច្បាប់ (P)";
-        if (isAbsent) statusText = " អវត្តមាន (A)";
-
-        if (statusText !== "") {
+    let hasIssue = false;
+    allCards.forEach((card) => {
+        const isP = card.querySelector('.btn-att.permission').classList.contains('active');
+        const isA = card.querySelector('.btn-att.absent').classList.contains('active');
+        if (isP || isA) {
+            hasIssue = true;
             const name = card.getAttribute('data-name');
-            const id = card.querySelector('.student-id').innerText;
-            studentList += `🆔 ${id}. ${name} => ${statusText}\n`;
-            hasMissingStudents = true;
+            const id = card.getAttribute('data-id');
+            message += `🆔 ${id}. ${name} -> ${isP ? '🟡 ច្បាប់' : '🔴 អវត្តមាន'}\n`;
         }
     });
 
-    if (!hasMissingStudents) {
-        message += `✅ សិស្សមករៀនគ្រប់ចំនួន (គ្មានសិស្សអវត្តមាន)\n`;
-    } else {
-        message += studentList;
-    }
-
-    message += `--------------------------\n`;
-    const totalAbsent = parseInt(leaveCount) + parseInt(absentCount);
-    message += `❌ អវត្តមានសរុប: ${totalAbsent} នាក់\n`;
-    message += `🟡 ច្បាប់ (P): ${leaveCount} នាក់\n`;
-    message += `🔴 អវត្តមាន (A): ${absentCount} នាក់\n`;
-
-    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    if (!hasIssue) message += "✅ សិស្សវត្តមានគ្រប់ចំនួន\n";
     
+    message += `--------------------------\n`;
+    message += `❌ អវត្តមានសរុប: <b>${totalAbsent}</b> នាក់\n`;
+    message += `   🟡 ច្បាប់: ${permissionCount} នាក់\n`;
+    message += `   🔴 ឥតច្បាប់: ${absentCount} នាក់`;
+
     try {
-        const response = await fetch(url, {
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message,
-                parse_mode: 'Markdown'
+            body: JSON.stringify({ 
+                chat_id: chatId, 
+                text: message, 
+                parse_mode: 'HTML' // កែពី Markdown មក HTML
             })
         });
-
         const result = await response.json();
-        
         if (response.ok) {
-            alert("✅ បានផ្ញើរបាយការណ៍វត្តមានទៅ Telegram រួចរាល់!");
+            alert("✅ បានផ្ញើទៅ Telegram រួចរាល់!");
         } else {
-            console.error("Telegram Error:", result);
-            alert(`❌ បរាជ័យ! ${result.description || 'សូមពិនិត្យ Bot Token ឬ Chat ID'}`);
+            alert(`❌ បរាជ័យ! ${result.description}`);
         }
-    } catch (error) {
-        console.error("Network Error:", error);
-        alert("❌ មានបញ្ហាបច្ចេកទេសក្នុងការផ្ញើ!");
+    } catch (e) { 
+        alert("❌ បញ្ហាបច្ចេកទេស! សូមពិនិត្យអ៊ីនធឺណិត។");
     }
 }
 
@@ -1202,15 +1165,18 @@ function switchStatsTab(tabName) {
         displaySummary();
     } else if (tabName === 'create') {
         populateClassDropdowns();
+        // Auto-fill today's date
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('reportDate').value = today;
     }
 }
 
+// Populate class dropdowns
 function populateClassDropdowns() {
     const newClassSelect = document.getElementById('newStudentClass');
     const leftStudentSelect = document.getElementById('leftStudentSelect');
     
+    // Populate new student class dropdown
     newClassSelect.innerHTML = '<option value="">-- ជ្រើសរើសថ្នាក់ --</option>';
     Object.keys(studentData).forEach(className => {
         const option = document.createElement('option');
@@ -1219,6 +1185,7 @@ function populateClassDropdowns() {
         newClassSelect.appendChild(option);
     });
     
+    // Populate left student dropdown with all students
     leftStudentSelect.innerHTML = '<option value="">-- ជ្រើសរើសសិស្ស --</option>';
     Object.keys(studentData).forEach(className => {
         studentData[className].forEach(student => {
@@ -1230,65 +1197,68 @@ function populateClassDropdowns() {
     });
 }
 
+// Add new student
 function addNewStudent() {
     const className = document.getElementById('newStudentClass').value;
-    const name = document.getElementById('newStudentName').value;
+    const name = document.getElementById('newStudentName').value.trim();
     const gender = document.getElementById('newStudentGender').value;
     const date = document.getElementById('newStudentDate').value;
-
+    
     if (!className || !name || !gender || !date) {
-        alert('សូមបំពេញព័ត៌មានសិស្សថ្មីឱ្យបានគ្រប់គ្រាន់');
+        alert('សូមបំពេញព័ត៌មានឲ្យបានគ្រប់គ្រាន់!');
         return;
     }
-
-    if (newStudentsArray.find(s => s.name === name && s.class === className)) {
-        alert('សិស្សនេះត្រូវបានបន្ថែមរួចហើយ!');
-        return;
-    }
-
-    // បន្ថែមចូលក្នុង array សម្រាប់ Report
+    
     newStudentsArray.push({
         name: name,
         class: className,
         gender: gender,
         date: date
     });
-
-    // បន្ថែមចូលក្នុង studentData ដើម្បីបង្ហាញក្នុង Attendance
-    if (studentData[className]) {
-        const newStudent = {
-            id: 'NEW',
-            name: name,
-            sex: gender
-        };
-        
-        // ពិនិត្យថាមិនមានរួចហើយ
-        const exists = studentData[className].find(s => s.name === name);
-        if (!exists) {
-            studentData[className].push(newStudent);
-            
-            // ប្រសិនបើកំពុងមើលថ្នាក់នោះ refresh បញ្ជី
-            if (currentClass === className) {
-                renderStudents(className);
-            }
-        }
+    
+    console.log('➕ Added new student:', name);
+    console.log('Total new students:', newStudentsArray.length);
+    
+    // IMMEDIATELY add to attendance system studentData
+    if (!studentData[className]) {
+        studentData[className] = [];
     }
-
+    
+    const newStudentForAttendance = {
+        id: Date.now().toString().slice(-3), // Generate 3-digit ID
+        name: name,
+        sex: gender
+    };
+    
+    studentData[className].push(newStudentForAttendance);
+    console.log('✅ Added to attendance system:', newStudentForAttendance);
+    
+    // Save to localStorage so it persists
+    saveStudentData();
+    
+    // Refresh left student dropdown to include new student
+    populateClassDropdowns();
+    
+    // Update total students count
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     document.getElementById('totalStudents').value = currentTotal + 1;
     
+    // Clear inputs
     document.getElementById('newStudentName').value = '';
     document.getElementById('newStudentGender').value = '';
     document.getElementById('newStudentDate').value = '';
     
+    // Update display
     displayNewStudents();
     
-    // ផ្ញើ notification ភ្លាមទៅ Telegram
-    sendNewStudentNotification(name, className, gender, date);
-    
-    alert(`✅ បានបន្ថែម "${name}" ទៅក្នុងថ្នាក់ "${className}" រួចរាល់!\n\nសិស្សនេះនឹងបង្ហាញក្នុងផ្នែក Attendance ភ្លាមៗ។`);
+    // Refresh attendance list if currently viewing that class
+    const activeClassElement = document.querySelector('.class-item.active');
+    if (activeClassElement && activeClassElement.innerText === className) {
+        renderStudents(className);
+    }
 }
 
+// Display new students list
 function displayNewStudents() {
     const container = document.getElementById('newStudentsList');
     if (newStudentsArray.length === 0) {
@@ -1307,25 +1277,9 @@ function displayNewStudents() {
     `).join('');
 }
 
+// Remove new student
 function removeNewStudent(index) {
-    const student = newStudentsArray[index];
-    
-    // ផ្ញើ notification ទៅ Telegram មុនពេលលុប
-    sendDeleteStudentNotification(student.name, student.class, 'new');
-    
-    // លុបពី studentData
-    if (studentData[student.class]) {
-        const studentIndex = studentData[student.class].findIndex(s => s.name === student.name);
-        if (studentIndex !== -1) {
-            studentData[student.class].splice(studentIndex, 1);
-            
-            // ប្រសិនបើកំពុងមើលថ្នាក់នោះ refresh បញ្ជី
-            if (currentClass === student.class) {
-                renderStudents(student.class);
-            }
-        }
-    }
-    
+    // Subtract 1 from total before removing
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     document.getElementById('totalStudents').value = Math.max(0, currentTotal - 1);
     
@@ -1333,6 +1287,7 @@ function removeNewStudent(index) {
     displayNewStudents();
 }
 
+// Add left student
 function addLeftStudent() {
     const studentJson = document.getElementById('leftStudentSelect').value;
     const date = document.getElementById('leftStudentDate').value;
@@ -1344,6 +1299,7 @@ function addLeftStudent() {
     
     const student = JSON.parse(studentJson);
     
+    // Check if already added
     if (leftStudentsArray.find(s => s.name === student.name && s.class === student.class)) {
         alert('សិស្សនេះត្រូវបានបន្ថែមរួចហើយ!');
         return;
@@ -1356,18 +1312,22 @@ function addLeftStudent() {
         date: date
     });
     
+    console.log('➖ Added left student:', student.name);
+    console.log('Total left students:', leftStudentsArray.length);
+    
+    // Subtract from total students count
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     document.getElementById('totalStudents').value = Math.max(0, currentTotal - 1);
     
+    // Clear inputs
     document.getElementById('leftStudentSelect').value = '';
     document.getElementById('leftStudentDate').value = '';
     
+    // Update display
     displayLeftStudents();
-    
-    // ផ្ញើ notification ភ្លាមទៅ Telegram
-    sendLeftStudentNotification(student.name, student.class, date);
 }
 
+// Display left students list
 function displayLeftStudents() {
     const container = document.getElementById('leftStudentsList');
     if (leftStudentsArray.length === 0) {
@@ -1386,17 +1346,32 @@ function displayLeftStudents() {
     `).join('');
 }
 
+// Remove left student
 function removeLeftStudent(index) {
-    const student = leftStudentsArray[index];
-    
-    // ផ្ញើ notification ទៅ Telegram មុនពេលលុប
-    sendDeleteStudentNotification(student.name, student.class, 'left');
-    
+    // Add 1 back to total before removing (since we subtracted it when adding)
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     document.getElementById('totalStudents').value = currentTotal + 1;
     
     leftStudentsArray.splice(index, 1);
     displayLeftStudents();
+}
+
+// Update total students automatically
+function updateTotalStudents() {
+    const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
+    const newCount = newStudentsArray.length;
+    const leftCount = leftStudentsArray.length;
+    
+    console.log('📊 Updating total students:');
+    console.log('  Current total:', currentTotal);
+    console.log('  New students:', newCount);
+    console.log('  Left students:', leftCount);
+    
+    // Calculate: current + new - left
+    const updatedTotal = currentTotal + newCount - leftCount;
+    console.log('  Calculated total:', updatedTotal);
+    
+    document.getElementById('totalStudents').value = Math.max(0, updatedTotal);
 }
 
 document.getElementById('reportForm').addEventListener('submit', function(e) {
@@ -1421,6 +1396,13 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
         createdAt: editingIndex >= 0 ? reports[editingIndex].createdAt : new Date().toISOString()
     };
 
+    console.log('=== DEBUG INFO ===');
+    console.log('New students count:', newStudentsArray.length);
+    console.log('Left students count:', leftStudentsArray.length);
+    console.log('New students array:', newStudentsArray);
+    console.log('Left students array:', leftStudentsArray);
+    console.log('Report object:', report);
+
     if (editingIndex >= 0) {
         reports[editingIndex] = report;
         editingIndex = -1;
@@ -1430,17 +1412,24 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
 
     saveReports();
     
+    // Send to Telegram if there are new or left students
     if (newStudentsArray.length > 0 || leftStudentsArray.length > 0) {
+        console.log('📤 Sending to Telegram...');
         sendStudentChangesToTelegram(report);
+    } else {
+        console.log('⚠️ No new or left students to send');
+        alert('គ្មានសិស្សថ្មីឬឈប់ - មិនផ្ញើទៅ Telegram');
     }
     
     alert('រក្សាទុករបាយការណ៍បានជោគជ័យ!');
     
+    // Only reset new/left students arrays and their displays
     newStudentsArray = [];
     leftStudentsArray = [];
     displayNewStudents();
     displayLeftStudents();
     
+    // Clear the input fields for adding new students
     document.getElementById('newStudentClass').value = '';
     document.getElementById('newStudentName').value = '';
     document.getElementById('newStudentGender').value = '';
@@ -1449,137 +1438,50 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
     document.getElementById('leftStudentDate').value = '';
 });
 
-// ========== INSTANT TELEGRAM NOTIFICATIONS ==========
-
-async function sendNewStudentNotification(name, className, gender, date) {
-    const chatId = '-1003814592979';
-    const today = new Date().toLocaleDateString('km-KH');
-    const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    
-    let message = `✅ *សិស្សចូលថ្មី*\n\n`;
-    message += `👤 *ឈ្មោះ:* ${name}\n`;
-    message += `🏫 *ថ្នាក់:* ${className}\n`;
-    message += `⚧️ *ភេទ:* ${gender === 'M' ? 'ប្រុស' : 'ស្រី'}\n`;
-    message += `📅 *ថ្ងៃចូល:* ${date}\n`;
-    message += `⏰ *ពេលកត់ត្រា:* ${time} (${today})`;
-
-    try {
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message,
-                parse_mode: 'Markdown'
-            })
-        });
-
-        const result = await response.json();
-        if (result.ok) {
-            console.log('✅ បានផ្ញើ notification សិស្សចូលថ្មីទៅ Telegram!');
-        }
-    } catch (error) {
-        console.error('❌ Error sending new student notification:', error);
-    }
-}
-
-async function sendLeftStudentNotification(name, className, date) {
-    const chatId = '-1003814592979';
-    const today = new Date().toLocaleDateString('km-KH');
-    const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    
-    let message = `❌ *សិស្សឈប់*\n\n`;
-    message += `👤 *ឈ្មោះ:* ${name}\n`;
-    message += `🏫 *ថ្នាក់:* ${className}\n`;
-    message += `📅 *ថ្ងៃឈប់:* ${date}\n`;
-    message += `⏰ *ពេលកត់ត្រា:* ${time} (${today})`;
-
-    try {
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message,
-                parse_mode: 'Markdown'
-            })
-        });
-
-        const result = await response.json();
-        if (result.ok) {
-            console.log('✅ បានផ្ញើ notification សិស្សឈប់ទៅ Telegram!');
-        }
-    } catch (error) {
-        console.error('❌ Error sending left student notification:', error);
-    }
-}
-
-async function sendDeleteStudentNotification(name, className, type) {
-    const chatId = '-1003814592979';
-    const today = new Date().toLocaleDateString('km-KH');
-    const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    
-    let message = `🗑️ *លុបសិស្សចេញ*\n\n`;
-    message += `👤 *ឈ្មោះ:* ${name}\n`;
-    message += `🏫 *ថ្នាក់:* ${className}\n`;
-    message += `⏰ *ពេលលុប:* ${time} (${today})`;
-
-    try {
-        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message,
-                parse_mode: 'Markdown'
-            })
-        });
-
-        const result = await response.json();
-        if (result.ok) {
-            console.log('✅ បានផ្ញើ notification លុបសិស្សទៅ Telegram!');
-        }
-    } catch (error) {
-        console.error('❌ Error sending delete notification:', error);
-    }
-}
-
 async function sendStudentChangesToTelegram(report) {
-    const chatId = '-1003814592979';
+    const chatId = '-1003814592979'; // Main admin group
+    
+    console.log('🔍 Building Telegram message...');
     
     let message = `📊 *របាយការណ៍ស្ថិតិសិស្ស*\n\n`;
-    message += `📅 *ថ្ងៃខែឆ្នាំ:* ${report.reportDate}\n`;
-    message += `👥 *សិស្សសរុប:* ${report.totalStudents} នាក់\n`;
-    message += `👤 *សិស្សស្រី:* ${report.femaleStudents} នាក់\n\n`;
     
+    // 1. សិស្សសរុប
+    message += `👥 *សិស្សសរុប:* ${report.totalStudents} នាក់\n\n`;
+    
+    // 2. ថ្ងៃខែឆ្នាំ
+    message += `📅 *ថ្ងៃខែឆ្នាំ:* ${report.reportDate}\n\n`;
+    
+    // 3. សិស្សចូលថ្មី
     if (report.newStudents && report.newStudents.length > 0) {
+        console.log('Adding new students to message:', report.newStudents);
         message += `✅ *សិស្សចូលថ្មី*\n`;
         report.newStudents.forEach((student, index) => {
-            message += `   ${index + 1}. ${student.name} (${student.class})\n`;
+            message += `${index + 1}. ${student.name}\n   • ថ្នាក់: ${student.class}\n   • កាលបរិច្ឆេទ: ${student.date}\n`;
             message += `      • ភេទ: ${student.gender === 'M' ? 'ប្រុស' : 'ស្រី'}\n`;
-            message += `      • ថ្ងៃចូល: ${student.date}\n`;
         });
         message += `\n`;
     }
     
+    // 4. សិស្សឈប់
     if (report.leftStudents && report.leftStudents.length > 0) {
+        console.log('Adding left students to message:', report.leftStudents);
         message += `❌ *សិស្សឈប់*\n`;
         report.leftStudents.forEach((student, index) => {
-            message += `   ${index + 1}. ${student.name} (${student.class})\n`;
-            message += `      • ថ្ងៃឈប់: ${student.date}\n`;
+            message += `${index + 1}. ${student.name}\n   • ថ្នាក់: ${student.class}\n   • កាលបរិច្ឆេទ: ${student.date}\n`;
         });
         message += `\n`;
     }
     
+    // 5. សិស្សចូលសរុប
     const newCount = report.newStudents ? report.newStudents.length : 0;
-    const leftCount = report.leftStudents ? report.leftStudents.length : 0;
-    
-    message += `━━━━━━━━━━━━━━━━━━\n`;
     message += `📥 *សិស្សចូលសរុប:* ${newCount} នាក់\n`;
+    
+    // 6. សិស្សឈប់សរុប
+    const leftCount = report.leftStudents ? report.leftStudents.length : 0;
     message += `📤 *សិស្សឈប់សរុប:* ${leftCount} នាក់`;
 
-    console.log('📤 Sending to Telegram...');
-    console.log('Message:', message);
+    console.log('📝 Final message:', message);
+    console.log('📤 Sending to chat ID:', chatId);
 
     try {
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -1596,11 +1498,11 @@ async function sendStudentChangesToTelegram(report) {
 
         const result = await response.json();
         
-        console.log('Telegram Response:', result);
+        console.log('📬 Telegram API response:', result);
         
         if (result.ok) {
             console.log('✅ ផ្ញើព័ត៌មានសិស្សទៅ Telegram បានជោគជ័យ!');
-            alert('✅ បានផ្ញើរបាយការណ៍ទៅ Telegram រួចរាល់!');
+            alert('✅ ផ្ញើព័ត៌មានទៅ Telegram រួចរាល់!');
         } else {
             console.error('❌ Telegram error:', result);
             alert('⚠️ មានបញ្ហាក្នុងការផ្ញើទៅ Telegram:\n' + (result.description || 'Unknown error'));
@@ -1746,6 +1648,10 @@ function displaySummary() {
     `;
 }
 
+function editReport(index) {
+    // Removed edit functionality as requested
+}
+
 function deleteReport(index) {
     if (confirm('តើអ្នកប្រាកដថាចង់លុបរបាយការណ៍នេះមែនទេ?')) {
         reports.splice(index, 1);
@@ -1805,6 +1711,10 @@ function exportReport(index) {
     URL.revokeObjectURL(url);
 }
 
+async function sendReportToTelegram(index) {
+    // Removed as changes are sent automatically
+}
+
 function resetReportForm() {
     document.getElementById('reportForm').reset();
     newStudentsArray = [];
@@ -1814,11 +1724,25 @@ function resetReportForm() {
     editingIndex = -1;
 }
 
-// Initialize on page load
-window.addEventListener('DOMContentLoaded', () => {
-    initializeAttendanceSystem();
+// Initialize
+window.onload = () => {
+    // Load student data from localStorage first
+    loadStudentData();
+    
+    // Initialize attendance system
+    const firstClass = Object.keys(studentData)[0];
+    if(firstClass) renderStudents(firstClass);
+    
+    // Initialize statistics system
     loadReports();
-});
+    populateClassDropdowns();
+    
+    // Auto-fill today's date
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('reportDate').value = today;
+    
+    console.log('🚀 System initialized');
+};
 </script>
 
 </body>
