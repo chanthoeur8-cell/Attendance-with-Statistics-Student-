@@ -327,6 +327,8 @@
         /* ========== STATISTICS REPORT STYLES ========== */
         .stats-container {
             padding: 30px;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
         }
 
         .tabs {
@@ -649,6 +651,10 @@
                     </div>
                 </div>
 
+                <button class="btn-main" onclick="syncAttendanceToReport()" style="background: #4e73df; margin-bottom: 15px; width: 100%;">
+                    📊 ផ្ទេរទិន្នន័យទៅរបាយការណ៍ស្ថិតិ
+                </button>
+
                 <div class="list-header">បញ្ជីសិស្ស</div>
                 <div id="studentContainer"></div>
 
@@ -686,60 +692,197 @@
                         <h3>ស្ថិតិសិស្សសរុប</h3>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label>សិស្សសរុប (នាក់) *</label>
-                                <input type="number" id="totalStudents" min="0" required>
+                                <label>សិស្សសរុបទាំងព្រឹកនិងរសៀល (នាក់) *</label>
+                                <input type="number" id="totalStudents" min="0" required readonly>
                             </div>
                             <div class="form-group">
-                                <label>សិស្សស្រី (នាក់) *</label>
-                                <input type="number" id="femaleStudents" min="0" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h3>ស្ថិតិសិស្សតាមវេន និងភាសា</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>សិស្សរៀនវេនព្រឹកផ្នែកភាសាខ្មែរ (នាក់)</label>
-                                <input type="number" id="khmerMorning" min="0" value="0">
+                                <label>សិស្សស្រីសរុប (នាក់) *</label>
+                                <input type="number" id="totalFemaleStudents" min="0" required readonly>
                             </div>
                             <div class="form-group">
-                                <label>សិស្សរៀនវេនរសៀលផ្នែកភាសាខ្មែរ (នាក់)</label>
-                                <input type="number" id="khmerAfternoon" min="0" value="0">
+                                <label>សិស្សរៀនពេញម៉ោង (នាក់)</label>
+                                <input type="number" id="fullTimeStudents" min="0" value="0">
                             </div>
                             <div class="form-group">
-                                <label>សិស្សរៀនវេនព្រឹកផ្នែកភាសាអង់គ្លេស (នាក់)</label>
-                                <input type="number" id="englishMorning" min="0" value="0">
+                                <label>សិស្សស្រីរៀនពេញម៉ោង (នាក់)</label>
+                                <input type="number" id="fullTimeFemale" min="0" value="0">
                             </div>
                             <div class="form-group">
-                                <label>សិស្សរៀនវេនរសៀលផ្នែកភាសាអង់គ្លេស (នាក់)</label>
-                                <input type="number" id="englishAfternoon" min="0" value="0">
+                                <label>សិស្សតែកម្មវិធីភាសាខ្មែរសរុប (នាក់)</label>
+                                <input type="number" id="khmerOnlyTotal" min="0" value="0">
                             </div>
                             <div class="form-group">
-                                <label>សិស្សរៀនទាំងព្រឹកទាំងរសៀលផ្នែកភាសាអង់គ្លេស (នាក់)</label>
-                                <input type="number" id="englishBoth" min="0" value="0">
+                                <label>សិស្សស្រីតែកម្មវិធីភាសាខ្មែរ (នាក់)</label>
+                                <input type="number" id="khmerOnlyFemale" min="0" value="0">
                             </div>
                             <div class="form-group">
-                                <label>សិស្សរៀនទាំងព្រឹកទាំងរសៀលផ្នែកភាសាខ្មែរ (នាក់)</label>
-                                <input type="number" id="khmerBoth" min="0" value="0">
+                                <label>សិស្សតែកម្មវិធីភាសាអង់គ្លេសសរុប (នាក់)</label>
+                                <input type="number" id="englishOnlyTotal" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>សិស្សស្រីតែកម្មវិធីភាសាអង់គ្លេស (នាក់)</label>
+                                <input type="number" id="englishOnlyFemale" min="0" value="0">
                             </div>
                         </div>
                     </div>
 
                     <div class="form-section">
-                        <h3>សេវាកម្ម និងសកម្មភាព</h3>
+                        <h3>សិស្សសាកល្បង</h3>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label>សិស្សទទួលសេវាមើលថែថ្ងៃត្រង់ (នាក់)</label>
-                                <input type="number" id="lunchCare" min="0" value="0">
+                                <label>សិស្សសាកល្បងសរុប (នាក់) *</label>
+                                <input type="number" id="trialStudentsTotal" min="0" value="0" onchange="generateTrialStudentFields()">
                             </div>
                             <div class="form-group">
-                                <label>សិស្សសាកល្បង (នាក់)</label>
-                                <input type="number" id="trialStudents" min="0" value="0">
+                                <label>សិស្សស្រីសាកល្បង (នាក់)</label>
+                                <input type="number" id="trialFemale" min="0" value="0">
                             </div>
                             <div class="form-group">
-                                <label>ថ្នាក់សាកល្បង</label>
-                                <input type="text" id="trialClass" placeholder="ឧ. ថ្នាក់ទី១, ថ្នាក់ទី២">
+                                <label>ថ្ងៃខែឆ្នាំសាកល្បង</label>
+                                <input type="date" id="trialDate">
+                            </div>
+                            <div class="form-group">
+                                <label>រយៈពេលសាកល្បង</label>
+                                <input type="text" id="trialDuration" placeholder="ឧ. ១សប្តាហ៍, ៣ថ្ងៃ">
+                            </div>
+                        </div>
+                        <div id="trialStudentsContainer" style="margin-top: 20px;"></div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>សិស្សទទួលការមើលថែរ</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>សិស្សទទួលការមើលថែរសរុប (នាក់)</label>
+                                <input type="number" id="careServiceTotal" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>សិស្សស្រីទទួលការមើលថែរ (នាក់)</label>
+                                <input type="number" id="careServiceFemale" min="0" value="0">
+                            </div>
+                        </div>
+                        
+                        <h4 style="color: #667eea; margin: 20px 0 10px 0;">សិស្សទទួលការមើលថែរថ្មី</h4>
+                        <div id="newCareStudentsList"></div>
+                        <div class="form-grid" style="margin-top: 15px;">
+                            <div class="form-group">
+                                <label>ជ្រើសរើសថ្នាក់</label>
+                                <select id="newCareStudentClass" onchange="updateNewCareStudentList()">
+                                    <option value="">-- ជ្រើសរើសថ្នាក់ --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>ជ្រើសរើសសិស្ស</label>
+                                <select id="newCareStudentSelect">
+                                    <option value="">-- ជ្រើសរើសសិស្ស --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>កាលបរិច្ឆេទចាប់ផ្តើម</label>
+                                <input type="date" id="newCareStartDate">
+                            </div>
+                        </div>
+                        <button type="button" class="btn-main btn-primary" onclick="addNewCareStudent()" style="margin-top: 10px;">+ បន្ថែមសិស្សទទួលការមើលថែរថ្មី</button>
+
+                        <h4 style="color: #e74a3b; margin: 20px 0 10px 0;">សិស្សឈប់ទទួលការមើលថែរ</h4>
+                        <div id="stopCareStudentsList"></div>
+                        <div class="form-grid" style="margin-top: 15px;">
+                            <div class="form-group">
+                                <label>ជ្រើសរើសថ្នាក់</label>
+                                <select id="stopCareStudentClass" onchange="updateStopCareStudentList()">
+                                    <option value="">-- ជ្រើសរើសថ្នាក់ --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>ជ្រើសរើសសិស្ស</label>
+                                <select id="stopCareStudentSelect">
+                                    <option value="">-- ជ្រើសរើសសិស្ស --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>កាលបរិច្ឆេទឈប់</label>
+                                <input type="date" id="stopCareDate">
+                            </div>
+                            <div class="form-group">
+                                <label>មូលហេតុឈប់</label>
+                                <input type="text" id="stopCareReason" placeholder="បញ្ចូលមូលហេតុ">
+                            </div>
+                        </div>
+                        <button type="button" class="btn-main btn-danger" onclick="addStopCareStudent()" style="margin-top: 10px;">+ បន្ថែមសិស្សឈប់ទទួលការមើលថែរ</button>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>ពេលព្រឹក</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>សិស្សសរុប (នាក់)</label>
+                                <input type="number" id="morningTotal" min="0" value="0" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>សិស្សស្រី (នាក់)</label>
+                                <input type="number" id="morningFemale" min="0" value="0" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>អវត្តមានសរុប (នាក់)</label>
+                                <input type="number" id="morningAbsentTotal" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>អវត្តមានស្រី (នាក់)</label>
+                                <input type="number" id="morningAbsentFemale" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>អាណាព្យាបាលនាក់សុំ (នាក់)</label>
+                                <input type="number" id="morningParentPermission" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>អាណាព្យាបាលស្រីនាក់សុំ (នាក់)</label>
+                                <input type="number" id="morningParentPermissionFemale" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>សាលាទាក់ទងទៅសួរ (នាក់)</label>
+                                <input type="number" id="morningSchoolContact" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>សាលាទាក់ទងស្រី (នាក់)</label>
+                                <input type="number" id="morningSchoolContactFemale" min="0" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>ពេលរសៀល</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>សិស្សសរុប (នាក់)</label>
+                                <input type="number" id="afternoonTotal" min="0" value="0" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>សិស្សស្រី (នាក់)</label>
+                                <input type="number" id="afternoonFemale" min="0" value="0" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>អវត្តមានសរុប (នាក់)</label>
+                                <input type="number" id="afternoonAbsentTotal" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>អវត្តមានស្រី (នាក់)</label>
+                                <input type="number" id="afternoonAbsentFemale" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>អាណាព្យាបាលនាក់សុំ (នាក់)</label>
+                                <input type="number" id="afternoonParentPermission" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>អាណាព្យាបាលស្រីនាក់សុំ (នាក់)</label>
+                                <input type="number" id="afternoonParentPermissionFemale" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>សាលាទាក់ទងទៅសួរ (នាក់)</label>
+                                <input type="number" id="afternoonSchoolContact" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>សាលាទាក់ទងស្រី (នាក់)</label>
+                                <input type="number" id="afternoonSchoolContactFemale" min="0" value="0">
                             </div>
                         </div>
                     </div>
@@ -770,6 +913,21 @@
                                 <label>កាលបរិច្ឆេទចូល</label>
                                 <input type="date" id="newStudentDate">
                             </div>
+                            <div class="form-group">
+                                <label>រយៈពេលបង់ថ្លៃសិក្សា</label>
+                                <select id="newStudentPaymentDuration">
+                                    <option value="">-- ជ្រើសរើស --</option>
+                                    <option value="1month">១ខែ</option>
+                                    <option value="3months">៣ខែ</option>
+                                    <option value="6months">៦ខែ</option>
+                                    <option value="1year">១ឆ្នាំ</option>
+                                    <option value="custom">ផ្សេងៗ</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="customPaymentField" style="display: none;">
+                                <label>បញ្ជាក់រយៈពេល</label>
+                                <input type="text" id="customPaymentDuration" placeholder="ឧ. ២ខែ, ៩ខែ">
+                            </div>
                         </div>
                         <button type="button" class="btn-main btn-primary" onclick="addNewStudent()" style="margin-top: 10px;">+ បន្ថែមសិស្សថ្មី</button>
                     </div>
@@ -779,6 +937,12 @@
                         <div id="leftStudentsList"></div>
                         <div class="form-grid" style="margin-top: 15px;">
                             <div class="form-group">
+                                <label>ជ្រើសរើសថ្នាក់</label>
+                                <select id="leftStudentClass" onchange="updateLeftStudentList()">
+                                    <option value="">-- ជ្រើសរើសថ្នាក់ --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label>ជ្រើសរើសសិស្ស</label>
                                 <select id="leftStudentSelect">
                                     <option value="">-- ជ្រើសរើសសិស្ស --</option>
@@ -787,6 +951,10 @@
                             <div class="form-group">
                                 <label>កាលបរិច្ឆេទឈប់</label>
                                 <input type="date" id="leftStudentDate">
+                            </div>
+                            <div class="form-group">
+                                <label>មូលហេតុឈប់</label>
+                                <input type="text" id="leftReason" placeholder="បញ្ចូលមូលហេតុ">
                             </div>
                         </div>
                         <button type="button" class="btn-main btn-danger" onclick="addLeftStudent()" style="margin-top: 10px;">+ បន្ថែមសិស្សឈប់</button>
@@ -950,62 +1118,72 @@ const studentData = {
 };
 
 const classChatIds = {
-    'ថ្នាក់មត្តេយ្យកម្រិតមធ្យម(ព្រឹក)': '-1004845440768',
-    'ថ្នាក់មត្តេយ្យកម្រិតមធ្យម(រសៀល)': '-1004845440768',
-    'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់(ព្រឹក)': '-1004828804361',
-    'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់(រសៀល)': '-1004828804361', 
-    'ថ្នាក់ទី១(ព្រឹក)': '-1004936041559',
-    'ថ្នាក់ទី១(រសៀល)': '-1004936041559',
-    'ថ្នាក់ទី២(ព្រឹក)': '-1004953929888',
-    'ថ្នាក់ទី២(រសៀល)': '-1004953929888',
-    'ថ្នាក់ទី៣(រសៀល)': '-1004872387682',
-    'ថ្នាក់ទី៤ ៥': '-1004844052526',
-    'Fount1 mooning': '-1004986675448',
-    'Fount1 Evening': '-1004986675448',
-    'Nursery(ព្រឹក)': '-1004924159874',
-    'Nursery(រសៀល)': '-1004924159874',
-    'Fount2': '-1004871212513',
-    'Fount2(narein)': '-1004871212513',
-    'Level1': '-1004906276801',
-    'Level2': '-1004968404918',
-    'មត្ដេយ្យកម្រិតទាប(ព្រឹក)': '-1004835279036',
-    'មត្ដេយ្យកម្រិតទាប(រសៀល)': '-1004835279036'
+    'ថ្នាក់មត្តេយ្យកម្រិតមធ្យម(ព្រឹក)': '-4845440768',
+    'ថ្នាក់មត្តេយ្យកម្រិតមធ្យម(រសៀល)': '-4845440768',
+    'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់(ព្រឹក)': '-4828804361',
+    'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់(រសៀល)': '-4828804361',
+    'ថ្នាក់ទី១(ព្រឹក)': '-4936041559',
+    'ថ្នាក់ទី១(រសៀល)': '-4936041559',
+    'ថ្នាក់ទី២(ព្រឹក)': '-4953929888',
+    'ថ្នាក់ទី២(រសៀល)': '-4953929888',
+    'ថ្នាក់ទី៣(រសៀល)': '-4872387682',
+    'ថ្នាក់ទី៤ ': '-4844052526',
+    'ថ្នាក់ទី៥': '-4712921883',
+    'Fount1 morning': '-4986675448',
+    'Fount1 Evening': '-4986675448',
+    'Nursery(ព្រឹក)': '-4924159874',
+    'Nursery(រសៀល)': '-4924159874',
+    'Fount2': '-4871212513',
+    'Fount2(narein)': '-4871212513',
+    'Level1': '-4906276801',
+    'Level2': '-4968404918',
+    'មត្តេយ្យកម្រិតទាប(ព្រឹក)': '-4835279036',
+    'មត្តេយ្យកម្រិតទាប(រសៀល)': '-4835279036'
 };
 
 const TELEGRAM_BOT_TOKEN = '8501623225:AAGu-F_GHSQ-dLBrEME7eidOpW2yDf3qvXw';
 
-// Load studentData from localStorage if it exists
+let selectedClassName = '';
+let reports = [];
+let newStudentsArray = [];
+let leftStudentsArray = [];
+let trialStudentsArray = [];
+let newCareStudentsArray = [];
+let stopCareStudentsArray = [];
+
+// Load data from localStorage
 function loadStudentData() {
     const saved = localStorage.getItem('studentDataMIKIDS');
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
-            // Merge saved data with default data
             Object.keys(parsed).forEach(className => {
                 studentData[className] = parsed[className];
             });
-            console.log('✅ Loaded student data from localStorage');
         } catch (e) {
             console.error('Error loading student data:', e);
         }
     }
 }
 
-// Save studentData to localStorage
 function saveStudentData() {
     try {
         localStorage.setItem('studentDataMIKIDS', JSON.stringify(studentData));
-        console.log('💾 Saved student data to localStorage');
     } catch (e) {
         console.error('Error saving student data:', e);
     }
 }
 
-// ========== STATISTICS REPORT DATA ==========
-let reports = [];
-let editingIndex = -1;
-let newStudentsArray = [];
-let leftStudentsArray = [];
+function loadReports() {
+    const saved = localStorage.getItem('studentReports');
+    if (saved) {
+        reports = JSON.parse(saved);
+    }
+}
+
+function saveReports() {
+    localStorage.setItem('studentReports', JSON.stringify(reports));
+}
 
 // ========== MAIN TAB SWITCHING ==========
 function switchMainTab(tabName) {
@@ -1015,6 +1193,22 @@ function switchMainTab(tabName) {
     event.target.classList.add('active');
     document.getElementById(tabName + '-system').classList.add('active');
 }
+
+// Show/hide custom payment duration field
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentSelect = document.getElementById('newStudentPaymentDuration');
+    if (paymentSelect) {
+        paymentSelect.addEventListener('change', function() {
+            const customField = document.getElementById('customPaymentField');
+            if (this.value === 'custom') {
+                customField.style.display = 'block';
+            } else {
+                customField.style.display = 'none';
+                document.getElementById('customPaymentDuration').value = '';
+            }
+        });
+    }
+});
 
 // ========== ATTENDANCE SYSTEM FUNCTIONS ==========
 document.getElementById('attDate').valueAsDate = new Date();
@@ -1031,6 +1225,7 @@ Object.keys(studentData).forEach((className, index) => {
 function selectClass(element, className) {
     document.querySelectorAll('.class-item').forEach(i => i.classList.remove('active'));
     element.classList.add('active');
+    selectedClassName = className;
     document.getElementById('displayClass').innerText = className;
     renderStudents(className);
 }
@@ -1044,6 +1239,8 @@ function renderStudents(className) {
         const card = document.createElement('div');
         card.className = 'student-card';
         card.setAttribute('data-name', s.name);
+        card.setAttribute('data-id', s.id);
+        card.setAttribute('data-sex', s.sex);
         card.innerHTML = `
             <div class="student-id">${s.id}</div>
             <div class="student-info">
@@ -1067,21 +1264,20 @@ function mark(btn, type) {
     btn.classList.add('active');
     calculateSummary();
 }
+
 function calculateSummary() {
     const permissionCount = document.querySelectorAll('.btn-att.permission.active').length;
     const absentCount = document.querySelectorAll('.btn-att.absent.active').length;
     const totalStudents = document.querySelectorAll('.student-card').length;
     const presentCount = totalStudents - (permissionCount + absentCount);
     
-    
-    // ✅ UPDATE UI នៅទីនេះ
     document.getElementById('cP').innerText = presentCount;
     document.getElementById('cL').innerText = permissionCount;
     document.getElementById('cA').innerText = absentCount;
     document.getElementById('cT').innerText = totalStudents;
 }
 
-    async function sendToTelegram() {
+async function sendAttendanceToTelegram() {
     if (!selectedClassName) return alert("⚠️ សូមជ្រើសរើសថ្នាក់!");
     
     const chatId = classChatIds[selectedClassName] ? classChatIds[selectedClassName].trim() : null;
@@ -1094,7 +1290,6 @@ function calculateSummary() {
     const absentCount = document.querySelectorAll('.btn-att.absent.active').length;
     const totalAbsent = permissionCount + absentCount;
     
-    // ប្តូរមកប្រើ HTML Tags វិញដើម្បីភាពច្បាស់លាស់
     let message = `<b>📊 របាយការណ៍វត្តមាន</b>\n`;
     message += `🏫 ថ្នាក់: <b>${selectedClassName}</b>\n`;
     message += `📅 ថ្ងៃទី: ${date}\n`;
@@ -1126,7 +1321,7 @@ function calculateSummary() {
             body: JSON.stringify({ 
                 chat_id: chatId, 
                 text: message, 
-                parse_mode: 'HTML' // កែពី Markdown មក HTML
+                parse_mode: 'HTML'
             })
         });
         const result = await response.json();
@@ -1140,18 +1335,119 @@ function calculateSummary() {
     }
 }
 
+function exportToExcel() {
+    alert('Feature coming soon!');
+}
+
+// ========== SYNC ATTENDANCE TO REPORT ==========
+function syncAttendanceToReport() {
+    // Calculate totals from all classes
+    let morningTotal = 0;
+    let morningFemale = 0;
+    let morningAbsent = 0;
+    let morningAbsentFemale = 0;
+    let morningPermission = 0;
+    let morningPermissionFemale = 0;
+    
+    let afternoonTotal = 0;
+    let afternoonFemale = 0;
+    let afternoonAbsent = 0;
+    let afternoonAbsentFemale = 0;
+    let afternoonPermission = 0;
+    let afternoonPermissionFemale = 0;
+    
+    let grandTotal = 0;
+    let grandTotalFemale = 0;
+    
+    // Loop through all classes and count
+    Object.keys(studentData).forEach(className => {
+        const students = studentData[className];
+        const isMorning = className.includes('ព្រឹក') || className.toLowerCase().includes('mooning');
+        const isAfternoon = className.includes('រសៀល') || className.toLowerCase().includes('evening');
+        
+        students.forEach(student => {
+            const isFemale = student.sex === 'F';
+            
+            // Add to grand total
+            grandTotal++;
+            if (isFemale) grandTotalFemale++;
+            
+            // Add to morning/afternoon
+            if (isMorning) {
+                morningTotal++;
+                if (isFemale) morningFemale++;
+            }
+            if (isAfternoon) {
+                afternoonTotal++;
+                if (isFemale) afternoonFemale++;
+            }
+        });
+    });
+    
+    // Now count absences from current attendance check
+    document.querySelectorAll('.student-card').forEach(card => {
+        const isFemale = card.getAttribute('data-sex') === 'F';
+        const className = document.getElementById('displayClass').innerText;
+        const isMorning = className.includes('ព្រឹក') || className.toLowerCase().includes('mooning');
+        const isAfternoon = className.includes('រសៀល') || className.toLowerCase().includes('evening');
+        
+        const isPermission = card.querySelector('.btn-att.permission').classList.contains('active');
+        const isAbsent = card.querySelector('.btn-att.absent').classList.contains('active');
+        
+        if (isPermission) {
+            if (isMorning) {
+                morningPermission++;
+                if (isFemale) morningPermissionFemale++;
+            }
+            if (isAfternoon) {
+                afternoonPermission++;
+                if (isFemale) afternoonPermissionFemale++;
+            }
+        }
+        
+        if (isAbsent) {
+            if (isMorning) {
+                morningAbsent++;
+                if (isFemale) morningAbsentFemale++;
+            }
+            if (isAfternoon) {
+                afternoonAbsent++;
+                if (isFemale) afternoonAbsentFemale++;
+            }
+        }
+    });
+    
+    // Switch to statistics tab
+    document.querySelector('.main-tab:nth-child(2)').click();
+    
+    // Wait a bit for tab to switch
+    setTimeout(() => {
+        // Fill in the values
+        document.getElementById('totalStudents').value = grandTotal;
+        document.getElementById('totalFemaleStudents').value = grandTotalFemale;
+        
+        document.getElementById('morningTotal').value = morningTotal;
+        document.getElementById('morningFemale').value = morningFemale;
+        document.getElementById('morningAbsentTotal').value = morningAbsent;
+        document.getElementById('morningAbsentFemale').value = morningAbsentFemale;
+        document.getElementById('morningParentPermission').value = morningPermission;
+        document.getElementById('morningParentPermissionFemale').value = morningPermissionFemale;
+        
+        document.getElementById('afternoonTotal').value = afternoonTotal;
+        document.getElementById('afternoonFemale').value = afternoonFemale;
+        document.getElementById('afternoonAbsentTotal').value = afternoonAbsent;
+        document.getElementById('afternoonAbsentFemale').value = afternoonAbsentFemale;
+        document.getElementById('afternoonParentPermission').value = afternoonPermission;
+        document.getElementById('afternoonParentPermissionFemale').value = afternoonPermissionFemale;
+        
+        alert(`✅ ផ្ទេរទិន្នន័យរួចរាល់!\n\n` +
+              `👥 សិស្សសរុប: ${grandTotal} នាក់ (ស្រី ${grandTotalFemale})\n` +
+              `🌅 ពេលព្រឹក: ${morningTotal} នាក់ (ស្រី ${morningFemale})\n` +
+              `🌆 ពេលរសៀល: ${afternoonTotal} នាក់ (ស្រី ${afternoonFemale})`);
+    }, 300);
+}
+
 // ========== STATISTICS REPORT FUNCTIONS ==========
-function loadReports() {
-    const saved = localStorage.getItem('studentReports');
-    if (saved) {
-        reports = JSON.parse(saved);
-    }
-}
-
-function saveReports() {
-    localStorage.setItem('studentReports', JSON.stringify(reports));
-}
-
 function switchStatsTab(tabName) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -1165,100 +1461,283 @@ function switchStatsTab(tabName) {
         displaySummary();
     } else if (tabName === 'create') {
         populateClassDropdowns();
-        // Auto-fill today's date
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('reportDate').value = today;
+        calculateTotalsFromStudentData();
     }
 }
 
-// Populate class dropdowns
 function populateClassDropdowns() {
     const newClassSelect = document.getElementById('newStudentClass');
-    const leftStudentSelect = document.getElementById('leftStudentSelect');
+    const leftClassSelect = document.getElementById('leftStudentClass');
+    const newCareClassSelect = document.getElementById('newCareStudentClass');
+    const stopCareClassSelect = document.getElementById('stopCareStudentClass');
     
-    // Populate new student class dropdown
+    // Clear existing options
     newClassSelect.innerHTML = '<option value="">-- ជ្រើសរើសថ្នាក់ --</option>';
-    Object.keys(studentData).forEach(className => {
-        const option = document.createElement('option');
-        option.value = className;
-        option.textContent = className;
-        newClassSelect.appendChild(option);
-    });
+    leftClassSelect.innerHTML = '<option value="">-- ជ្រើសរើសថ្នាក់ --</option>';
+    newCareClassSelect.innerHTML = '<option value="">-- ជ្រើសរើសថ្នាក់ --</option>';
+    stopCareClassSelect.innerHTML = '<option value="">-- ជ្រើសរើសថ្នាក់ --</option>';
     
-    // Populate left student dropdown with all students
-    leftStudentSelect.innerHTML = '<option value="">-- ជ្រើសរើសសិស្ស --</option>';
     Object.keys(studentData).forEach(className => {
-        studentData[className].forEach(student => {
-            const option = document.createElement('option');
-            option.value = JSON.stringify({name: student.name, class: className, id: student.id});
-            option.textContent = `${student.name} (${className})`;
-            leftStudentSelect.appendChild(option);
-        });
+        const option1 = document.createElement('option');
+        option1.value = className;
+        option1.textContent = className;
+        newClassSelect.appendChild(option1);
+        
+        const option2 = document.createElement('option');
+        option2.value = className;
+        option2.textContent = className;
+        leftClassSelect.appendChild(option2);
+        
+        const option3 = document.createElement('option');
+        option3.value = className;
+        option3.textContent = className;
+        newCareClassSelect.appendChild(option3);
+        
+        const option4 = document.createElement('option');
+        option4.value = className;
+        option4.textContent = className;
+        stopCareClassSelect.appendChild(option4);
     });
 }
 
-// Add new student
+function generateTrialStudentFields() {
+    const count = parseInt(document.getElementById('trialStudentsTotal').value) || 0;
+    const container = document.getElementById('trialStudentsContainer');
+    
+    if (count === 0) {
+        container.innerHTML = '';
+        trialStudentsArray = [];
+        return;
+    }
+    
+    // Preserve existing data if count increased
+    const currentCount = trialStudentsArray.length;
+    if (count > currentCount) {
+        for (let i = currentCount; i < count; i++) {
+            trialStudentsArray.push({
+                name: '',
+                gender: '',
+                class: '',
+                program: ''
+            });
+        }
+    } else if (count < currentCount) {
+        trialStudentsArray = trialStudentsArray.slice(0, count);
+    }
+    
+    let html = '<h4 style="color: #667eea; margin-bottom: 15px;">បញ្ជីសិស្សសាកល្បង</h4>';
+    
+    for (let i = 0; i < count; i++) {
+        const student = trialStudentsArray[i];
+        html += `
+            <div class="student-entry" style="display: block; padding: 20px; margin-bottom: 15px;">
+                <h5 style="color: #333; margin-bottom: 15px;">សិស្សទី ${i + 1}</h5>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>ឈ្មោះសិស្ស *</label>
+                        <input type="text" class="trial-name" data-index="${i}" value="${student.name}" placeholder="បញ្ចូលឈ្មោះ" onchange="updateTrialStudent(${i}, 'name', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>ភេទ *</label>
+                        <select class="trial-gender" data-index="${i}" onchange="updateTrialStudent(${i}, 'gender', this.value)">
+                            <option value="">-- ជ្រើសរើស --</option>
+                            <option value="M" ${student.gender === 'M' ? 'selected' : ''}>ប្រុស</option>
+                            <option value="F" ${student.gender === 'F' ? 'selected' : ''}>ស្រី</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ថ្នាក់ *</label>
+                        <select class="trial-class" data-index="${i}" onchange="updateTrialStudent(${i}, 'class', this.value)">
+                            <option value="">-- ជ្រើសរើសថ្នាក់ --</option>
+                            ${Object.keys(studentData).map(className => 
+                                `<option value="${className}" ${student.class === className ? 'selected' : ''}>${className}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>កម្មវិធីសិក្សា *</label>
+                        <select class="trial-program" data-index="${i}" onchange="updateTrialStudent(${i}, 'program', this.value)">
+                            <option value="">-- ជ្រើសរើស --</option>
+                            <option value="full" ${student.program === 'full' ? 'selected' : ''}>ពេញកម្មវិធីសិក្សា</option>
+                            <option value="khmer" ${student.program === 'khmer' ? 'selected' : ''}>តែកម្មវិធីសិក្សាខ្មែរ</option>
+                            <option value="english" ${student.program === 'english' ? 'selected' : ''}>តែកម្មវិធីសិក្សាអង់គ្លេស</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+
+function updateTrialStudent(index, field, value) {
+    if (trialStudentsArray[index]) {
+        trialStudentsArray[index][field] = value;
+        
+        // Auto-update female count when gender is selected
+        if (field === 'gender') {
+            const femaleCount = trialStudentsArray.filter(s => s.gender === 'F').length;
+            document.getElementById('trialFemale').value = femaleCount;
+        }
+    }
+}
+
+function updateLeftStudentList() {
+    const className = document.getElementById('leftStudentClass').value;
+    const studentSelect = document.getElementById('leftStudentSelect');
+    
+    studentSelect.innerHTML = '<option value="">-- ជ្រើសរើសសិស្ស --</option>';
+    
+    if (className && studentData[className]) {
+        studentData[className].forEach(student => {
+            const option = document.createElement('option');
+            option.value = JSON.stringify({
+                name: student.name,
+                class: className,
+                id: student.id,
+                sex: student.sex
+            });
+            option.textContent = `${student.id}. ${student.name} (${student.sex === 'M' ? 'ប្រុស' : 'ស្រី'})`;
+            studentSelect.appendChild(option);
+        });
+    }
+}
+
+function calculateTotalsFromStudentData() {
+    let totalCount = 0;
+    let totalFemaleCount = 0;
+    let morningTotal = 0;
+    let morningFemale = 0;
+    let afternoonTotal = 0;
+    let afternoonFemale = 0;
+    
+    Object.keys(studentData).forEach(className => {
+        const students = studentData[className];
+        const classTotal = students.length;
+        const classFemale = students.filter(s => s.sex === 'F').length;
+        
+        // Add to grand total
+        totalCount += classTotal;
+        totalFemaleCount += classFemale;
+        
+        // Check if morning or afternoon class
+        if (className.includes('ព្រឹក') || className.toLowerCase().includes('mooning')) {
+            morningTotal += classTotal;
+            morningFemale += classFemale;
+        }
+        if (className.includes('រសៀល') || className.toLowerCase().includes('evening')) {
+            afternoonTotal += classTotal;
+            afternoonFemale += classFemale;
+        }
+    });
+    
+    document.getElementById('totalStudents').value = totalCount;
+    document.getElementById('totalFemaleStudents').value = totalFemaleCount;
+    document.getElementById('morningTotal').value = morningTotal;
+    document.getElementById('morningFemale').value = morningFemale;
+    document.getElementById('afternoonTotal').value = afternoonTotal;
+    document.getElementById('afternoonFemale').value = afternoonFemale;
+}
+
 function addNewStudent() {
     const className = document.getElementById('newStudentClass').value;
     const name = document.getElementById('newStudentName').value.trim();
     const gender = document.getElementById('newStudentGender').value;
     const date = document.getElementById('newStudentDate').value;
+    const paymentDuration = document.getElementById('newStudentPaymentDuration').value;
+    const customDuration = document.getElementById('customPaymentDuration').value.trim();
     
     if (!className || !name || !gender || !date) {
         alert('សូមបំពេញព័ត៌មានឲ្យបានគ្រប់គ្រាន់!');
         return;
     }
     
+    // Determine final payment duration text
+    let finalPaymentDuration = '';
+    if (paymentDuration === 'custom' && customDuration) {
+        finalPaymentDuration = customDuration;
+    } else if (paymentDuration && paymentDuration !== 'custom') {
+        const durationMap = {
+            '1month': '១ខែ',
+            '3months': '៣ខែ',
+            '6months': '៦ខែ',
+            '1year': '១ឆ្នាំ'
+        };
+        finalPaymentDuration = durationMap[paymentDuration] || '';
+    }
+    
+    // Add to temporary array for this report
     newStudentsArray.push({
         name: name,
         class: className,
         gender: gender,
-        date: date
+        date: date,
+        paymentDuration: finalPaymentDuration
     });
     
-    console.log('➕ Added new student:', name);
-    console.log('Total new students:', newStudentsArray.length);
-    
-    // IMMEDIATELY add to attendance system studentData
+    // Add to attendance system
     if (!studentData[className]) {
         studentData[className] = [];
     }
     
     const newStudentForAttendance = {
-        id: Date.now().toString().slice(-3), // Generate 3-digit ID
+        id: Date.now().toString().slice(-3),
         name: name,
         sex: gender
     };
     
     studentData[className].push(newStudentForAttendance);
-    console.log('✅ Added to attendance system:', newStudentForAttendance);
-    
-    // Save to localStorage so it persists
     saveStudentData();
     
-    // Refresh left student dropdown to include new student
-    populateClassDropdowns();
-    
-    // Update total students count
+    // Update totals
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
+    const currentFemaleTotal = parseInt(document.getElementById('totalFemaleStudents').value) || 0;
+    
     document.getElementById('totalStudents').value = currentTotal + 1;
+    if (gender === 'F') {
+        document.getElementById('totalFemaleStudents').value = currentFemaleTotal + 1;
+    }
+    
+    // Update morning/afternoon totals based on class
+    if (className.includes('ព្រឹក') || className.toLowerCase().includes('mooning')) {
+        const morningTotal = parseInt(document.getElementById('morningTotal').value) || 0;
+        document.getElementById('morningTotal').value = morningTotal + 1;
+        if (gender === 'F') {
+            const morningFemale = parseInt(document.getElementById('morningFemale').value) || 0;
+            document.getElementById('morningFemale').value = morningFemale + 1;
+        }
+    }
+    if (className.includes('រសៀល') || className.toLowerCase().includes('evening')) {
+        const afternoonTotal = parseInt(document.getElementById('afternoonTotal').value) || 0;
+        document.getElementById('afternoonTotal').value = afternoonTotal + 1;
+        if (gender === 'F') {
+            const afternoonFemale = parseInt(document.getElementById('afternoonFemale').value) || 0;
+            document.getElementById('afternoonFemale').value = afternoonFemale + 1;
+        }
+    }
     
     // Clear inputs
     document.getElementById('newStudentName').value = '';
     document.getElementById('newStudentGender').value = '';
     document.getElementById('newStudentDate').value = '';
+    document.getElementById('newStudentPaymentDuration').value = '';
+    document.getElementById('customPaymentDuration').value = '';
+    document.getElementById('customPaymentField').style.display = 'none';
     
     // Update display
     displayNewStudents();
+    populateClassDropdowns();
     
-    // Refresh attendance list if currently viewing that class
+    // Refresh attendance list if viewing that class
     const activeClassElement = document.querySelector('.class-item.active');
     if (activeClassElement && activeClassElement.innerText === className) {
         renderStudents(className);
     }
 }
 
-// Display new students list
 function displayNewStudents() {
     const container = document.getElementById('newStudentsList');
     if (newStudentsArray.length === 0) {
@@ -1270,64 +1749,105 @@ function displayNewStudents() {
         <div class="student-entry">
             <div class="student-entry-info">
                 <div class="student-entry-name">${student.name}</div>
-                <div class="student-entry-details">ថ្នាក់: ${student.class} | ភេទ: ${student.gender === 'M' ? 'ប្រុស' : 'ស្រី'} | ថ្ងៃចូល: ${student.date}</div>
+                <div class="student-entry-details">ថ្នាក់: ${student.class} | ភេទ: ${student.gender === 'M' ? 'ប្រុស' : 'ស្រី'} | ថ្ងៃចូល: ${student.date}${student.paymentDuration ? ' | បង់: ' + student.paymentDuration : ''}</div>
             </div>
             <button class="btn-remove" onclick="removeNewStudent(${index})">លុប</button>
         </div>
     `).join('');
 }
 
-// Remove new student
 function removeNewStudent(index) {
-    // Subtract 1 from total before removing
+    const student = newStudentsArray[index];
+    
+    // Subtract from totals
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     document.getElementById('totalStudents').value = Math.max(0, currentTotal - 1);
+    
+    if (student.gender === 'F') {
+        const currentFemaleTotal = parseInt(document.getElementById('totalFemaleStudents').value) || 0;
+        document.getElementById('totalFemaleStudents').value = Math.max(0, currentFemaleTotal - 1);
+    }
+    
+    // Update morning/afternoon totals
+    if (student.class.includes('ព្រឹក') || student.class.toLowerCase().includes('mooning')) {
+        const morningTotal = parseInt(document.getElementById('morningTotal').value) || 0;
+        document.getElementById('morningTotal').value = Math.max(0, morningTotal - 1);
+        if (student.gender === 'F') {
+            const morningFemale = parseInt(document.getElementById('morningFemale').value) || 0;
+            document.getElementById('morningFemale').value = Math.max(0, morningFemale - 1);
+        }
+    }
+    if (student.class.includes('រសៀល') || student.class.toLowerCase().includes('evening')) {
+        const afternoonTotal = parseInt(document.getElementById('afternoonTotal').value) || 0;
+        document.getElementById('afternoonTotal').value = Math.max(0, afternoonTotal - 1);
+        if (student.gender === 'F') {
+            const afternoonFemale = parseInt(document.getElementById('afternoonFemale').value) || 0;
+            document.getElementById('afternoonFemale').value = Math.max(0, afternoonFemale - 1);
+        }
+    }
     
     newStudentsArray.splice(index, 1);
     displayNewStudents();
 }
 
-// Add left student
 function addLeftStudent() {
     const studentJson = document.getElementById('leftStudentSelect').value;
     const date = document.getElementById('leftStudentDate').value;
+    const reason = document.getElementById('leftReason').value.trim();
     
     if (!studentJson || !date) {
         alert('សូមជ្រើសរើសសិស្ស និងកាលបរិច្ឆេទ!');
         return;
     }
     
-    const student = JSON.parse(studentJson);
-    
-    // Check if already added
-    if (leftStudentsArray.find(s => s.name === student.name && s.class === student.class)) {
-        alert('សិស្សនេះត្រូវបានបន្ថែមរួចហើយ!');
-        return;
-    }
+    const studentInfo = JSON.parse(studentJson);
     
     leftStudentsArray.push({
-        name: student.name,
-        class: student.class,
-        id: student.id,
-        date: date
+        name: studentInfo.name,
+        class: studentInfo.class,
+        id: studentInfo.id,
+        sex: studentInfo.sex,
+        date: date,
+        reason: reason || "មិនបានបញ្ជាក់"
     });
     
-    console.log('➖ Added left student:', student.name);
-    console.log('Total left students:', leftStudentsArray.length);
-    
-    // Subtract from total students count
+    // Subtract from totals
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     document.getElementById('totalStudents').value = Math.max(0, currentTotal - 1);
     
+    if (studentInfo.sex === 'F') {
+        const currentFemaleTotal = parseInt(document.getElementById('totalFemaleStudents').value) || 0;
+        document.getElementById('totalFemaleStudents').value = Math.max(0, currentFemaleTotal - 1);
+    }
+    
+    // Update morning/afternoon totals
+    if (studentInfo.class.includes('ព្រឹក') || studentInfo.class.toLowerCase().includes('mooning')) {
+        const morningTotal = parseInt(document.getElementById('morningTotal').value) || 0;
+        document.getElementById('morningTotal').value = Math.max(0, morningTotal - 1);
+        if (studentInfo.sex === 'F') {
+            const morningFemale = parseInt(document.getElementById('morningFemale').value) || 0;
+            document.getElementById('morningFemale').value = Math.max(0, morningFemale - 1);
+        }
+    }
+    if (studentInfo.class.includes('រសៀល') || studentInfo.class.toLowerCase().includes('evening')) {
+        const afternoonTotal = parseInt(document.getElementById('afternoonTotal').value) || 0;
+        document.getElementById('afternoonTotal').value = Math.max(0, afternoonTotal - 1);
+        if (studentInfo.sex === 'F') {
+            const afternoonFemale = parseInt(document.getElementById('afternoonFemale').value) || 0;
+            document.getElementById('afternoonFemale').value = Math.max(0, afternoonFemale - 1);
+        }
+    }
+    
     // Clear inputs
+    document.getElementById('leftStudentClass').value = '';
     document.getElementById('leftStudentSelect').value = '';
     document.getElementById('leftStudentDate').value = '';
+    document.getElementById('leftReason').value = '';
     
-    // Update display
     displayLeftStudents();
+    updateLeftStudentList();
 }
 
-// Display left students list
 function displayLeftStudents() {
     const container = document.getElementById('leftStudentsList');
     if (leftStudentsArray.length === 0) {
@@ -1339,149 +1859,467 @@ function displayLeftStudents() {
         <div class="student-entry">
             <div class="student-entry-info">
                 <div class="student-entry-name">${student.name}</div>
-                <div class="student-entry-details">ថ្នាក់: ${student.class} | ថ្ងៃឈប់: ${student.date}</div>
+                <div class="student-entry-details">ថ្នាក់: ${student.class} | ថ្ងៃឈប់: ${student.date} | មូលហេតុ: ${student.reason}</div>
             </div>
             <button class="btn-remove" onclick="removeLeftStudent(${index})">លុប</button>
         </div>
     `).join('');
 }
 
-// Remove left student
 function removeLeftStudent(index) {
-    // Add 1 back to total before removing (since we subtracted it when adding)
+    const student = leftStudentsArray[index];
+    
+    // Add back to totals
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     document.getElementById('totalStudents').value = currentTotal + 1;
+    
+    if (student.sex === 'F') {
+        const currentFemaleTotal = parseInt(document.getElementById('totalFemaleStudents').value) || 0;
+        document.getElementById('totalFemaleStudents').value = currentFemaleTotal + 1;
+    }
+    
+    // Update morning/afternoon totals
+    if (student.class.includes('ព្រឹក') || student.class.toLowerCase().includes('mooning')) {
+        const morningTotal = parseInt(document.getElementById('morningTotal').value) || 0;
+        document.getElementById('morningTotal').value = morningTotal + 1;
+        if (student.sex === 'F') {
+            const morningFemale = parseInt(document.getElementById('morningFemale').value) || 0;
+            document.getElementById('morningFemale').value = morningFemale + 1;
+        }
+    }
+    if (student.class.includes('រសៀល') || student.class.toLowerCase().includes('evening')) {
+        const afternoonTotal = parseInt(document.getElementById('afternoonTotal').value) || 0;
+        document.getElementById('afternoonTotal').value = afternoonTotal + 1;
+        if (student.sex === 'F') {
+            const afternoonFemale = parseInt(document.getElementById('afternoonFemale').value) || 0;
+            document.getElementById('afternoonFemale').value = afternoonFemale + 1;
+        }
+    }
     
     leftStudentsArray.splice(index, 1);
     displayLeftStudents();
 }
 
-// Update total students automatically
-function updateTotalStudents() {
-    const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
-    const newCount = newStudentsArray.length;
-    const leftCount = leftStudentsArray.length;
+// ========== CARE SERVICE FUNCTIONS ==========
+function updateNewCareStudentList() {
+    const className = document.getElementById('newCareStudentClass').value;
+    const studentSelect = document.getElementById('newCareStudentSelect');
     
-    console.log('📊 Updating total students:');
-    console.log('  Current total:', currentTotal);
-    console.log('  New students:', newCount);
-    console.log('  Left students:', leftCount);
+    studentSelect.innerHTML = '<option value="">-- ជ្រើសរើសសិស្ស --</option>';
     
-    // Calculate: current + new - left
-    const updatedTotal = currentTotal + newCount - leftCount;
-    console.log('  Calculated total:', updatedTotal);
+    if (className && studentData[className]) {
+        studentData[className].forEach(student => {
+            const option = document.createElement('option');
+            option.value = JSON.stringify({
+                name: student.name,
+                class: className,
+                id: student.id,
+                sex: student.sex
+            });
+            option.textContent = `${student.id}. ${student.name} (${student.sex === 'M' ? 'ប្រុស' : 'ស្រី'})`;
+            studentSelect.appendChild(option);
+        });
+    }
+}
+
+function updateStopCareStudentList() {
+    const className = document.getElementById('stopCareStudentClass').value;
+    const studentSelect = document.getElementById('stopCareStudentSelect');
     
-    document.getElementById('totalStudents').value = Math.max(0, updatedTotal);
+    studentSelect.innerHTML = '<option value="">-- ជ្រើសរើសសិស្ស --</option>';
+    
+    if (className && studentData[className]) {
+        studentData[className].forEach(student => {
+            const option = document.createElement('option');
+            option.value = JSON.stringify({
+                name: student.name,
+                class: className,
+                id: student.id,
+                sex: student.sex
+            });
+            option.textContent = `${student.id}. ${student.name} (${student.sex === 'M' ? 'ប្រុស' : 'ស្រី'})`;
+            studentSelect.appendChild(option);
+        });
+    }
+}
+
+function addNewCareStudent() {
+    const studentJson = document.getElementById('newCareStudentSelect').value;
+    const date = document.getElementById('newCareStartDate').value;
+    
+    if (!studentJson || !date) {
+        alert('សូមជ្រើសរើសសិស្ស និងកាលបរិច្ឆេទ!');
+        return;
+    }
+    
+    const studentInfo = JSON.parse(studentJson);
+    
+    newCareStudentsArray.push({
+        name: studentInfo.name,
+        class: studentInfo.class,
+        id: studentInfo.id,
+        sex: studentInfo.sex,
+        date: date
+    });
+    
+    // Update totals - force update by reading current value first
+    const currentTotal = parseInt(document.getElementById('careServiceTotal').value) || 0;
+    const currentFemale = parseInt(document.getElementById('careServiceFemale').value) || 0;
+    
+    document.getElementById('careServiceTotal').value = currentTotal + 1;
+    
+    if (studentInfo.sex === 'F') {
+        document.getElementById('careServiceFemale').value = currentFemale + 1;
+    }
+    
+    console.log('✅ បន្ថែមសិស្សមើលថែរ:', studentInfo.name, '| សរុបឥឡូវ:', currentTotal + 1);
+    
+    // Clear inputs
+    document.getElementById('newCareStudentClass').value = '';
+    document.getElementById('newCareStudentSelect').value = '';
+    document.getElementById('newCareStartDate').value = '';
+    
+    displayNewCareStudents();
+    updateNewCareStudentList();
+}
+
+function displayNewCareStudents() {
+    const container = document.getElementById('newCareStudentsList');
+    if (newCareStudentsArray.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = newCareStudentsArray.map((student, index) => `
+        <div class="student-entry">
+            <div class="student-entry-info">
+                <div class="student-entry-name">${student.name}</div>
+                <div class="student-entry-details">ថ្នាក់: ${student.class} | កាលបរិច្ឆេទចាប់ផ្តើម: ${student.date}</div>
+            </div>
+            <button class="btn-remove" onclick="removeNewCareStudent(${index})">លុប</button>
+        </div>
+    `).join('');
+}
+
+function removeNewCareStudent(index) {
+    const student = newCareStudentsArray[index];
+    
+    // Subtract from totals
+    const currentTotal = parseInt(document.getElementById('careServiceTotal').value) || 0;
+    document.getElementById('careServiceTotal').value = Math.max(0, currentTotal - 1);
+    
+    if (student.sex === 'F') {
+        const currentFemaleTotal = parseInt(document.getElementById('careServiceFemale').value) || 0;
+        document.getElementById('careServiceFemale').value = Math.max(0, currentFemaleTotal - 1);
+    }
+    
+    newCareStudentsArray.splice(index, 1);
+    displayNewCareStudents();
+}
+
+function addStopCareStudent() {
+    const studentJson = document.getElementById('stopCareStudentSelect').value;
+    const date = document.getElementById('stopCareDate').value;
+    const reason = document.getElementById('stopCareReason').value.trim();
+    
+    if (!studentJson || !date) {
+        alert('សូមជ្រើសរើសសិស្ស និងកាលបរិច្ឆេទ!');
+        return;
+    }
+    
+    const studentInfo = JSON.parse(studentJson);
+    
+    stopCareStudentsArray.push({
+        name: studentInfo.name,
+        class: studentInfo.class,
+        id: studentInfo.id,
+        sex: studentInfo.sex,
+        date: date,
+        reason: reason || "មិនបានបញ្ជាក់"
+    });
+    
+    // Subtract from totals
+    const currentTotal = parseInt(document.getElementById('careServiceTotal').value) || 0;
+    document.getElementById('careServiceTotal').value = Math.max(0, currentTotal - 1);
+    
+    if (studentInfo.sex === 'F') {
+        const currentFemaleTotal = parseInt(document.getElementById('careServiceFemale').value) || 0;
+        document.getElementById('careServiceFemale').value = Math.max(0, currentFemaleTotal - 1);
+    }
+    
+    // Clear inputs
+    document.getElementById('stopCareStudentClass').value = '';
+    document.getElementById('stopCareStudentSelect').value = '';
+    document.getElementById('stopCareDate').value = '';
+    document.getElementById('stopCareReason').value = '';
+    
+    displayStopCareStudents();
+    updateStopCareStudentList();
+}
+
+function displayStopCareStudents() {
+    const container = document.getElementById('stopCareStudentsList');
+    if (stopCareStudentsArray.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = stopCareStudentsArray.map((student, index) => `
+        <div class="student-entry">
+            <div class="student-entry-info">
+                <div class="student-entry-name">${student.name}</div>
+                <div class="student-entry-details">ថ្នាក់: ${student.class} | កាលបរិច្ឆេទឈប់: ${student.date} | មូលហេតុ: ${student.reason}</div>
+            </div>
+            <button class="btn-remove" onclick="removeStopCareStudent(${index})">លុប</button>
+        </div>
+    `).join('');
+}
+
+function removeStopCareStudent(index) {
+    const student = stopCareStudentsArray[index];
+    
+    // Add back to totals
+    const currentTotal = parseInt(document.getElementById('careServiceTotal').value) || 0;
+    document.getElementById('careServiceTotal').value = currentTotal + 1;
+    
+    if (student.sex === 'F') {
+        const currentFemaleTotal = parseInt(document.getElementById('careServiceFemale').value) || 0;
+        document.getElementById('careServiceFemale').value = currentFemaleTotal + 1;
+    }
+    
+    stopCareStudentsArray.splice(index, 1);
+    displayStopCareStudents();
 }
 
 document.getElementById('reportForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const report = {
-        id: editingIndex >= 0 ? reports[editingIndex].id : Date.now(),
-        reportDate: document.getElementById('reportDate').value,
-        totalStudents: parseInt(document.getElementById('totalStudents').value),
-        femaleStudents: parseInt(document.getElementById('femaleStudents').value),
-        khmerMorning: parseInt(document.getElementById('khmerMorning').value) || 0,
-        khmerAfternoon: parseInt(document.getElementById('khmerAfternoon').value) || 0,
-        englishMorning: parseInt(document.getElementById('englishMorning').value) || 0,
-        englishAfternoon: parseInt(document.getElementById('englishAfternoon').value) || 0,
-        englishBoth: parseInt(document.getElementById('englishBoth').value) || 0,
-        khmerBoth: parseInt(document.getElementById('khmerBoth').value) || 0,
-        lunchCare: parseInt(document.getElementById('lunchCare').value) || 0,
-        trialStudents: parseInt(document.getElementById('trialStudents').value) || 0,
-        trialClass: document.getElementById('trialClass').value,
-        newStudents: [...newStudentsArray],
-        leftStudents: [...leftStudentsArray],
-        createdAt: editingIndex >= 0 ? reports[editingIndex].createdAt : new Date().toISOString()
-    };
-
-    console.log('=== DEBUG INFO ===');
-    console.log('New students count:', newStudentsArray.length);
-    console.log('Left students count:', leftStudentsArray.length);
-    console.log('New students array:', newStudentsArray);
-    console.log('Left students array:', leftStudentsArray);
-    console.log('Report object:', report);
-
-    if (editingIndex >= 0) {
-        reports[editingIndex] = report;
-        editingIndex = -1;
-    } else {
-        reports.push(report);
+    // Validate trial students if any
+    const trialCount = parseInt(document.getElementById('trialStudentsTotal').value) || 0;
+    if (trialCount > 0) {
+        const incompleteTrialStudents = trialStudentsArray.filter(s => 
+            !s.name || !s.gender || !s.class || !s.program
+        );
+        if (incompleteTrialStudents.length > 0) {
+            alert(`សូមបំពេញព័ត៌មានសិស្សសាកល្បងឲ្យបានគ្រប់គ្រាន់! នៅសល់ ${incompleteTrialStudents.length} នាក់`);
+            return;
+        }
     }
 
+    const report = {
+        id: Date.now(),
+        reportDate: document.getElementById('reportDate').value,
+        totalStudents: parseInt(document.getElementById('totalStudents').value),
+        totalFemaleStudents: parseInt(document.getElementById('totalFemaleStudents').value),
+        fullTimeStudents: parseInt(document.getElementById('fullTimeStudents').value) || 0,
+        fullTimeFemale: parseInt(document.getElementById('fullTimeFemale').value) || 0,
+        khmerOnlyTotal: parseInt(document.getElementById('khmerOnlyTotal').value) || 0,
+        khmerOnlyFemale: parseInt(document.getElementById('khmerOnlyFemale').value) || 0,
+        englishOnlyTotal: parseInt(document.getElementById('englishOnlyTotal').value) || 0,
+        englishOnlyFemale: parseInt(document.getElementById('englishOnlyFemale').value) || 0,
+        trialStudentsTotal: parseInt(document.getElementById('trialStudentsTotal').value) || 0,
+        trialFemale: parseInt(document.getElementById('trialFemale').value) || 0,
+        trialDate: document.getElementById('trialDate').value,
+        trialDuration: document.getElementById('trialDuration').value,
+        trialStudents: [...trialStudentsArray],
+        careServiceTotal: parseInt(document.getElementById('careServiceTotal').value) || 0,
+        careServiceFemale: parseInt(document.getElementById('careServiceFemale').value) || 0,
+        newCareStudents: [...newCareStudentsArray],
+        stopCareStudents: [...stopCareStudentsArray],
+        morningTotal: parseInt(document.getElementById('morningTotal').value) || 0,
+        morningFemale: parseInt(document.getElementById('morningFemale').value) || 0,
+        morningAbsentTotal: parseInt(document.getElementById('morningAbsentTotal').value) || 0,
+        morningAbsentFemale: parseInt(document.getElementById('morningAbsentFemale').value) || 0,
+        morningParentPermission: parseInt(document.getElementById('morningParentPermission').value) || 0,
+        morningParentPermissionFemale: parseInt(document.getElementById('morningParentPermissionFemale').value) || 0,
+        morningSchoolContact: parseInt(document.getElementById('morningSchoolContact').value) || 0,
+        morningSchoolContactFemale: parseInt(document.getElementById('morningSchoolContactFemale').value) || 0,
+        afternoonTotal: parseInt(document.getElementById('afternoonTotal').value) || 0,
+        afternoonFemale: parseInt(document.getElementById('afternoonFemale').value) || 0,
+        afternoonAbsentTotal: parseInt(document.getElementById('afternoonAbsentTotal').value) || 0,
+        afternoonAbsentFemale: parseInt(document.getElementById('afternoonAbsentFemale').value) || 0,
+        afternoonParentPermission: parseInt(document.getElementById('afternoonParentPermission').value) || 0,
+        afternoonParentPermissionFemale: parseInt(document.getElementById('afternoonParentPermissionFemale').value) || 0,
+        afternoonSchoolContact: parseInt(document.getElementById('afternoonSchoolContact').value) || 0,
+        afternoonSchoolContactFemale: parseInt(document.getElementById('afternoonSchoolContactFemale').value) || 0,
+        newStudents: [...newStudentsArray],
+        leftStudents: [...leftStudentsArray],
+        createdAt: new Date().toISOString()
+    };
+
+    reports.push(report);
     saveReports();
     
-    // Send to Telegram if there are new or left students
-    if (newStudentsArray.length > 0 || leftStudentsArray.length > 0) {
-        console.log('📤 Sending to Telegram...');
+    // Send to Telegram if there are changes
+    if (newStudentsArray.length > 0 || leftStudentsArray.length > 0 || trialStudentsArray.length > 0 || 
+        newCareStudentsArray.length > 0 || stopCareStudentsArray.length > 0) {
         sendStudentChangesToTelegram(report);
-    } else {
-        console.log('⚠️ No new or left students to send');
-        alert('គ្មានសិស្សថ្មីឬឈប់ - មិនផ្ញើទៅ Telegram');
     }
     
     alert('រក្សាទុករបាយការណ៍បានជោគជ័យ!');
     
-    // Only reset new/left students arrays and their displays
+    // Reset arrays
     newStudentsArray = [];
     leftStudentsArray = [];
+    trialStudentsArray = [];
+    newCareStudentsArray = [];
+    stopCareStudentsArray = [];
     displayNewStudents();
     displayLeftStudents();
+    displayNewCareStudents();
+    displayStopCareStudents();
+    document.getElementById('trialStudentsContainer').innerHTML = '';
     
-    // Clear the input fields for adding new students
+    // Clear the input fields
     document.getElementById('newStudentClass').value = '';
     document.getElementById('newStudentName').value = '';
     document.getElementById('newStudentGender').value = '';
     document.getElementById('newStudentDate').value = '';
+    document.getElementById('leftStudentClass').value = '';
     document.getElementById('leftStudentSelect').value = '';
     document.getElementById('leftStudentDate').value = '';
+    document.getElementById('leftReason').value = '';
+    document.getElementById('trialStudentsTotal').value = '0';
+    document.getElementById('newCareStudentClass').value = '';
+    document.getElementById('stopCareStudentClass').value = '';
 });
 
 async function sendStudentChangesToTelegram(report) {
-    const chatId = '-1003814592979'; // Main admin group
+    const chatId = '-1003814592979';
     
-    console.log('🔍 Building Telegram message...');
-    
-    let message = `📊 *របាយការណ៍ស្ថិតិសិស្ស*\n\n`;
-    
-    // 1. សិស្សសរុប
-    message += `👥 *សិស្សសរុប:* ${report.totalStudents} នាក់\n\n`;
-    
-    // 2. ថ្ងៃខែឆ្នាំ
+    let message = `📊 *របាយការណ៍ស្ថិតិសិស្សប្រចាំថ្ងៃ*\n\n`;
     message += `📅 *ថ្ងៃខែឆ្នាំ:* ${report.reportDate}\n\n`;
     
-    // 3. សិស្សចូលថ្មី
+    // ស្ថិតិសិស្សសរុប
+    message += `━━━━━━━━━━━━━━━━━━\n`;
+    message += `👥 *ស្ថិតិសិស្សសរុប*\n`;
+    message += `• សិស្សសរុបទាំងព្រឹកនិងរសៀល: ${report.totalStudents} នាក់\n`;
+    message += `• សិស្សស្រីសរុប: ${report.totalFemaleStudents} នាក់\n`;
+    if (report.fullTimeStudents > 0) {
+        message += `• សិស្សរៀនពេញម៉ោង: ${report.fullTimeStudents} នាក់ (ស្រី ${report.fullTimeFemale} នាក់)\n`;
+    }
+    if (report.khmerOnlyTotal > 0) {
+        message += `• សិស្សតែកម្មវិធីភាសាខ្មែរ: ${report.khmerOnlyTotal} នាក់ (ស្រី ${report.khmerOnlyFemale} នាក់)\n`;
+    }
+    if (report.englishOnlyTotal > 0) {
+        message += `• សិស្សតែកម្មវិធីភាសាអង់គ្លេស: ${report.englishOnlyTotal} នាក់ (ស្រី ${report.englishOnlyFemale} នាក់)\n`;
+    }
+    message += `\n`;
+    
+    // ស្ថិតិសិស្សសាកល្បង
+    if (report.trialStudents && report.trialStudents.length > 0) {
+        message += `━━━━━━━━━━━━━━━━━━\n`;
+        message += `🎓 *សិស្សសាកល្បង (${report.trialStudents.length} នាក់)*\n`;
+        if (report.trialDate) message += `• កាលបរិច្ឆេទ: ${report.trialDate}\n`;
+        if (report.trialDuration) message += `• រយៈពេល: ${report.trialDuration}\n`;
+        message += `\n`;
+        report.trialStudents.forEach((student, index) => {
+            const programText = student.program === 'full' ? 'ពេញកម្មវិធីសិក្សា' : 
+                               student.program === 'khmer' ? 'តែកម្មវិធីសិក្សាខ្មែរ' : 
+                               student.program === 'english' ? 'តែកម្មវិធីសិក្សាអង់គ្លេស' : '';
+            message += `${index + 1}. ${student.name}\n`;
+            message += `   • ថ្នាក់: ${student.class}\n`;
+            message += `   • ភេទ: ${student.gender === 'M' ? 'ប្រុស' : 'ស្រី'}\n`;
+            message += `   • កម្មវិធី: ${programText}\n\n`;
+        });
+    }
+    
+    // សិស្សទទួលការមើលថែរ
+    if (report.careServiceTotal > 0 || (report.newCareStudents && report.newCareStudents.length > 0) || 
+        (report.stopCareStudents && report.stopCareStudents.length > 0)) {
+        message += `━━━━━━━━━━━━━━━━━━\n`;
+        message += `🍽️ *សិស្សទទួលការមើលថែរ*\n`;
+        message += `• សិស្សសរុប: ${report.careServiceTotal} នាក់ (ស្រី ${report.careServiceFemale} នាក់)\n\n`;
+        
+        if (report.newCareStudents && report.newCareStudents.length > 0) {
+            message += `✅ *ទទួលការមើលថែរថ្មី (${report.newCareStudents.length} នាក់)*\n`;
+            report.newCareStudents.forEach((student, index) => {
+                message += `${index + 1}. ${student.name} (${student.class})\n`;
+                message += `   • ចាប់ផ្តើម: ${student.date}\n`;
+            });
+            message += `\n`;
+        }
+        
+        if (report.stopCareStudents && report.stopCareStudents.length > 0) {
+            message += `❌ *ឈប់ទទួលការមើលថែរ (${report.stopCareStudents.length} នាក់)*\n`;
+            report.stopCareStudents.forEach((student, index) => {
+                message += `${index + 1}. ${student.name} (${student.class})\n`;
+                message += `   • កាលបរិច្ឆេទឈប់: ${student.date}\n`;
+                message += `   • មូលហេតុ: ${student.reason}\n`;
+            });
+            message += `\n`;
+        }
+    }
+    
+    // ពេលព្រឹក
+    if (report.morningTotal > 0) {
+        message += `━━━━━━━━━━━━━━━━━━\n`;
+        message += `🌅 *ពេលព្រឹក*\n`;
+        message += `• សិស្សសរុប: ${report.morningTotal} នាក់ (ស្រី ${report.morningFemale} នាក់)\n`;
+        if (report.morningAbsentTotal > 0) {
+            message += `• អវត្តមានសរុប: ${report.morningAbsentTotal} នាក់ (ស្រី ${report.morningAbsentFemale} នាក់)\n`;
+        }
+        if (report.morningParentPermission > 0) {
+            message += `• អាណាព្យាបាលនាក់សុំ: ${report.morningParentPermission} នាក់ (ស្រី ${report.morningParentPermissionFemale} នាក់)\n`;
+        }
+        if (report.morningSchoolContact > 0) {
+            message += `• សាលាទាក់ទងទៅសួរ: ${report.morningSchoolContact} នាក់ (ស្រី ${report.morningSchoolContactFemale} នាក់)\n`;
+        }
+        message += `\n`;
+    }
+    
+    // ពេលរសៀល
+    if (report.afternoonTotal > 0) {
+        message += `━━━━━━━━━━━━━━━━━━\n`;
+        message += `🌆 *ពេលរសៀល*\n`;
+        message += `• សិស្សសរុប: ${report.afternoonTotal} នាក់ (ស្រី ${report.afternoonFemale} នាក់)\n`;
+        if (report.afternoonAbsentTotal > 0) {
+            message += `• អវត្តមានសរុប: ${report.afternoonAbsentTotal} នាក់ (ស្រី ${report.afternoonAbsentFemale} នាក់)\n`;
+        }
+        if (report.afternoonParentPermission > 0) {
+            message += `• អាណាព្យាបាលនាក់សុំ: ${report.afternoonParentPermission} នាក់ (ស្រី ${report.afternoonParentPermissionFemale} នាក់)\n`;
+        }
+        if (report.afternoonSchoolContact > 0) {
+            message += `• សាលាទាក់ទងទៅសួរ: ${report.afternoonSchoolContact} នាក់ (ស្រី ${report.afternoonSchoolContactFemale} នាក់)\n`;
+        }
+        message += `\n`;
+    }
+    
+    // សិស្សចូលថ្មី
     if (report.newStudents && report.newStudents.length > 0) {
-        console.log('Adding new students to message:', report.newStudents);
-        message += `✅ *សិស្សចូលថ្មី*\n`;
+        message += `━━━━━━━━━━━━━━━━━━\n`;
+        message += `✅ *សិស្សចូលថ្មី (${report.newStudents.length} នាក់)*\n\n`;
         report.newStudents.forEach((student, index) => {
-            message += `${index + 1}. ${student.name}\n   • ថ្នាក់: ${student.class}\n   • កាលបរិច្ឆេទ: ${student.date}\n`;
-            message += `      • ភេទ: ${student.gender === 'M' ? 'ប្រុស' : 'ស្រី'}\n`;
+            message += `${index + 1}. ${student.name}\n`;
+            message += `   • ថ្នាក់: ${student.class}\n`;
+            message += `   • ភេទ: ${student.gender === 'M' ? 'ប្រុស' : 'ស្រី'}\n`;
+            message += `   • កាលបរិច្ឆេទចូល: ${student.date}\n`;
+            if (student.paymentDuration) {
+                message += `   • រយៈពេលបង់ថ្លៃសិក្សា: ${student.paymentDuration}\n`;
+            }
+            message += `\n`;
         });
-        message += `\n`;
     }
     
-    // 4. សិស្សឈប់
+    // សិស្សឈប់
     if (report.leftStudents && report.leftStudents.length > 0) {
-        console.log('Adding left students to message:', report.leftStudents);
-        message += `❌ *សិស្សឈប់*\n`;
+        message += `━━━━━━━━━━━━━━━━━━\n`;
+        message += `❌ *សិស្សឈប់ (${report.leftStudents.length} នាក់)*\n\n`;
         report.leftStudents.forEach((student, index) => {
-            message += `${index + 1}. ${student.name}\n   • ថ្នាក់: ${student.class}\n   • កាលបរិច្ឆេទ: ${student.date}\n`;
+            message += `${index + 1}. ${student.name}\n`;
+            message += `   • ថ្នាក់: ${student.class}\n`;
+            message += `   • កាលបរិច្ឆេទឈប់: ${student.date}\n`;
+            message += `   • មូលហេតុ: ${student.reason}\n\n`;
         });
-        message += `\n`;
     }
     
-    // 5. សិស្សចូលសរុប
-    const newCount = report.newStudents ? report.newStudents.length : 0;
-    message += `📥 *សិស្សចូលសរុប:* ${newCount} នាក់\n`;
-    
-    // 6. សិស្សឈប់សរុប
-    const leftCount = report.leftStudents ? report.leftStudents.length : 0;
-    message += `📤 *សិស្សឈប់សរុប:* ${leftCount} នាក់`;
-
-    console.log('📝 Final message:', message);
-    console.log('📤 Sending to chat ID:', chatId);
+    // សង្ខេប
+    message += `━━━━━━━━━━━━━━━━━━\n`;
+    message += `📋 *សង្ខេប*\n`;
+    message += `🎓 សិស្សសាកល្បង: ${report.trialStudents ? report.trialStudents.length : 0} នាក់\n`;
+    message += `🍽️ សិស្សទទួលការមើលថែរ: ${report.careServiceTotal || 0} នាក់\n`;
+    message += `📥 សិស្សចូលថ្មី: ${report.newStudents ? report.newStudents.length : 0} នាក់\n`;
+    message += `📤 សិស្សឈប់: ${report.leftStudents ? report.leftStudents.length : 0} នាក់`;
 
     try {
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -1498,17 +2336,12 @@ async function sendStudentChangesToTelegram(report) {
 
         const result = await response.json();
         
-        console.log('📬 Telegram API response:', result);
-        
         if (result.ok) {
-            console.log('✅ ផ្ញើព័ត៌មានសិស្សទៅ Telegram បានជោគជ័យ!');
             alert('✅ ផ្ញើព័ត៌មានទៅ Telegram រួចរាល់!');
         } else {
-            console.error('❌ Telegram error:', result);
             alert('⚠️ មានបញ្ហាក្នុងការផ្ញើទៅ Telegram:\n' + (result.description || 'Unknown error'));
         }
     } catch (error) {
-        console.error('❌ Network error:', error);
         alert('❌ មានបញ្ហាក្នុងការតភ្ជាប់ទៅ Telegram:\n' + error.message);
     }
 }
@@ -1528,17 +2361,15 @@ function displayReports() {
 
     const sortedReports = [...reports].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    container.innerHTML = sortedReports.map((report, index) => {
-        const originalIndex = reports.findIndex(r => r.id === report.id);
+    container.innerHTML = sortedReports.map(report => {
         const newStudentsCount = Array.isArray(report.newStudents) ? report.newStudents.length : 0;
         const leftStudentsCount = Array.isArray(report.leftStudents) ? report.leftStudents.length : 0;
+        const trialStudentsCount = Array.isArray(report.trialStudents) ? report.trialStudents.length : 0;
         
         return `
             <div class="report-card">
                 <div class="report-header">
-                    <div>
-                        <div class="report-title">របាយការណ៍ថ្ងៃទី ${report.reportDate}</div>
-                    </div>
+                    <div class="report-title">របាយការណ៍ថ្ងៃទី ${report.reportDate}</div>
                 </div>
                 
                 <div class="report-stats">
@@ -1548,40 +2379,26 @@ function displayReports() {
                     </div>
                     <div class="stat-item">
                         <div class="stat-label">សិស្សស្រី</div>
-                        <div class="stat-value">${report.femaleStudents} នាក់</div>
+                        <div class="stat-value">${report.totalFemaleStudents || 0} នាក់</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-label">វេនព្រឹក (ខ្មែរ)</div>
-                        <div class="stat-value">${report.khmerMorning} នាក់</div>
+                        <div class="stat-label">ពេលព្រឹក</div>
+                        <div class="stat-value">${report.morningTotal || 0} នាក់ (ស្រី ${report.morningFemale || 0})</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-label">វេនរសៀល (ខ្មែរ)</div>
-                        <div class="stat-value">${report.khmerAfternoon} នាក់</div>
+                        <div class="stat-label">ពេលរសៀល</div>
+                        <div class="stat-value">${report.afternoonTotal || 0} នាក់ (ស្រី ${report.afternoonFemale || 0})</div>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-label">វេនព្រឹក (អង់គ្លេស)</div>
-                        <div class="stat-value">${report.englishMorning} នាក់</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">វេនរសៀល (អង់គ្លេស)</div>
-                        <div class="stat-value">${report.englishAfternoon} នាក់</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">ទាំងព្រឹក-រសៀល (អង់គ្លេស)</div>
-                        <div class="stat-value">${report.englishBoth} នាក់</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">ទាំងព្រឹក-រសៀល (ខ្មែរ)</div>
-                        <div class="stat-value">${report.khmerBoth} នាក់</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">មើលថែថ្ងៃត្រង់</div>
-                        <div class="stat-value">${report.lunchCare} នាក់</div>
-                    </div>
+                    ${trialStudentsCount > 0 ? `
                     <div class="stat-item">
                         <div class="stat-label">សាកល្បង</div>
-                        <div class="stat-value">${report.trialStudents} នាក់ ${report.trialClass ? '(' + report.trialClass + ')' : ''}</div>
+                        <div class="stat-value">${trialStudentsCount} នាក់ (ស្រី ${report.trialFemale || 0})</div>
+                        ${Array.isArray(report.trialStudents) && report.trialStudents.length > 0 ? 
+                            '<div class="stat-label" style="margin-top: 5px; font-size: 12px;">' + 
+                            report.trialStudents.map(s => s.name + ' (' + s.class + ')').join(', ') + 
+                            '</div>' : ''}
                     </div>
+                    ` : ''}
                     <div class="stat-item">
                         <div class="stat-label">ចូលថ្មី</div>
                         <div class="stat-value">${newStudentsCount} នាក់</div>
@@ -1595,8 +2412,7 @@ function displayReports() {
                 </div>
 
                 <div class="action-buttons">
-                    <button class="btn-main btn-small btn-danger" onclick="deleteReport(${originalIndex})">លុប</button>
-                    <button class="btn-main btn-small btn-secondary" onclick="exportReport(${originalIndex})">នាំចេញ</button>
+                    <button class="btn-main btn-small btn-danger" onclick="deleteReport('${report.id}')">លុប</button>
                 </div>
             </div>
         `;
@@ -1618,7 +2434,7 @@ function displaySummary() {
 
     const totalReports = reports.length;
     const avgTotal = Math.round(reports.reduce((sum, r) => sum + r.totalStudents, 0) / totalReports);
-    const avgFemale = Math.round(reports.reduce((sum, r) => sum + r.femaleStudents, 0) / totalReports);
+    const avgFemale = Math.round(reports.reduce((sum, r) => sum + (r.totalFemaleStudents || 0), 0) / totalReports);
     const totalNew = reports.reduce((sum, r) => sum + (Array.isArray(r.newStudents) ? r.newStudents.length : 0), 0);
     const totalLeft = reports.reduce((sum, r) => sum + (Array.isArray(r.leftStudents) ? r.leftStudents.length : 0), 0);
 
@@ -1648,100 +2464,46 @@ function displaySummary() {
     `;
 }
 
-function editReport(index) {
-    // Removed edit functionality as requested
-}
-
-function deleteReport(index) {
+function deleteReport(reportId) {
     if (confirm('តើអ្នកប្រាកដថាចង់លុបរបាយការណ៍នេះមែនទេ?')) {
-        reports.splice(index, 1);
+        reports = reports.filter(r => r.id != reportId);
         saveReports();
         displayReports();
     }
-}
-
-function exportReport(index) {
-    const report = reports[index];
-    let text = `
-របាយការណ៍ស្ថិតិសិស្ស
-ថ្ងៃទី: ${report.reportDate}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📊 ស្ថិតិសិស្សសរុប:
-• សិស្សសរុប: ${report.totalStudents} នាក់
-• សិស្សស្រី: ${report.femaleStudents} នាក់
-
-📚 ស្ថិតិតាមវេន និងភាសា:
-• វេនព្រឹក (ខ្មែរ): ${report.khmerMorning} នាក់
-• វេនរសៀល (ខ្មែរ): ${report.khmerAfternoon} នាក់
-• វេនព្រឹក (អង់គ្លេស): ${report.englishMorning} នាក់
-• វេនរសៀល (អង់គ្លេស): ${report.englishAfternoon} នាក់
-• ទាំងព្រឹក-រសៀល (អង់គ្លេស): ${report.englishBoth} នាក់
-• ទាំងព្រឹក-រសៀល (ខ្មែរ): ${report.khmerBoth} នាក់
-
-🍽️ សេវាកម្ម:
-• មើលថែថ្ងៃត្រង់: ${report.lunchCare} នាក់
-
-👥 សកម្មភាព:
-• សាកល្បង: ${report.trialStudents} នាក់ ${report.trialClass ? '(' + report.trialClass + ')' : ''}
-`;
-
-    if (Array.isArray(report.newStudents) && report.newStudents.length > 0) {
-        text += `\n✅ សិស្សចូលថ្មី (${report.newStudents.length} នាក់):\n`;
-        report.newStudents.forEach((student, i) => {
-            text += `  ${i + 1}. ${student.name} (${student.class}) - ភេទ: ${student.gender === 'M' ? 'ប្រុស' : 'ស្រី'} - ថ្ងៃចូល: ${student.date}\n`;
-        });
-    }
-
-    if (Array.isArray(report.leftStudents) && report.leftStudents.length > 0) {
-        text += `\n❌ សិស្សឈប់ (${report.leftStudents.length} នាក់):\n`;
-        report.leftStudents.forEach((student, i) => {
-            text += `  ${i + 1}. ${student.name} (${student.class}) - ថ្ងៃឈប់: ${student.date}\n`;
-        });
-    }
-
-    text = text.trim();
-
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `របាយការណ៍_${report.reportDate}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-async function sendReportToTelegram(index) {
-    // Removed as changes are sent automatically
 }
 
 function resetReportForm() {
     document.getElementById('reportForm').reset();
     newStudentsArray = [];
     leftStudentsArray = [];
+    trialStudentsArray = [];
+    newCareStudentsArray = [];
+    stopCareStudentsArray = [];
     displayNewStudents();
     displayLeftStudents();
-    editingIndex = -1;
+    displayNewCareStudents();
+    displayStopCareStudents();
+    document.getElementById('trialStudentsContainer').innerHTML = '';
+    calculateTotalsFromStudentData();
 }
 
 // Initialize
 window.onload = () => {
-    // Load student data from localStorage first
     loadStudentData();
-    
-    // Initialize attendance system
-    const firstClass = Object.keys(studentData)[0];
-    if(firstClass) renderStudents(firstClass);
-    
-    // Initialize statistics system
     loadReports();
+    
+    const firstClass = Object.keys(studentData)[0];
+    if(firstClass) {
+        selectedClassName = firstClass;
+        renderStudents(firstClass);
+    }
+    
     populateClassDropdowns();
     
-    // Auto-fill today's date
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('reportDate').value = today;
     
-    console.log('🚀 System initialized');
+    calculateTotalsFromStudentData();
 };
 </script>
 
