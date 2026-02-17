@@ -1238,6 +1238,11 @@ function renderStudents(className) {
         card.setAttribute('data-name', s.name);
         card.setAttribute('data-id', s.id);
         card.setAttribute('data-sex', s.sex);
+
+        // Restore saved attendance status if exists
+        const savedRecord = attendanceRecords[className] && attendanceRecords[className][s.name];
+        const savedStatus = savedRecord ? savedRecord.status : 'present';
+
         card.innerHTML = `
             <div class="student-id">${s.id}</div>
             <div class="student-info">
@@ -1245,21 +1250,15 @@ function renderStudents(className) {
                 <div class="student-sex">Sex: ${s.sex === 'M' ? 'Male' : 'Female'}</div>
             </div>
             <div class="attendance-btns">
-                <button class="btn-att present" onclick="mark(this, '✔️')">✔️</button>
-                <button class="btn-att permission" onclick="mark(this, 'P')">P</button>
-                <button class="btn-att absent" onclick="mark(this, 'A')">A</button>
+                <button class="btn-att present ${savedStatus === 'present' ? 'active' : ''}" onclick="mark(this, '✔️')">✔️</button>
+                <button class="btn-att permission ${savedStatus === 'permission' ? 'active' : ''}" onclick="mark(this, 'P')">P</button>
+                <button class="btn-att absent ${savedStatus === 'absent' ? 'active' : ''}" onclick="mark(this, 'A')">A</button>
             </div>
         `;
         container.appendChild(card);
     });
     calculateSummary();
-}
-
-function mark(btn, type) {
-    const parent = btn.parentElement;
-    parent.querySelectorAll('.btn-att').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    calculateSummary();
+    saveCurrentClassAttendance();
 }
 
 function calculateSummary() {
@@ -1332,15 +1331,42 @@ async function sendAttendanceToTelegram() {
     }
 }
 
-function exportToExcel() {
-    alert('Feature coming soon!');
+// ========== ATTENDANCE STORAGE PER CLASS ==========
+// Stores attendance results: { className: { studentName: 'present'|'permission'|'absent' } }
+let attendanceRecords = {};
+
+function mark(btn, type) {
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.btn-att').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    calculateSummary();
+    // Save attendance for current class
+    saveCurrentClassAttendance();
 }
 
-// ========== CALCULATE ALL CLASS TOTALS ==========
+function saveCurrentClassAttendance() {
+    if (!selectedClassName) return;
+    if (!attendanceRecords[selectedClassName]) {
+        attendanceRecords[selectedClassName] = {};
+    }
+    document.querySelectorAll('.student-card').forEach(card => {
+        const name = card.getAttribute('data-name');
+        const sex = card.getAttribute('data-sex');
+        const isPermission = card.querySelector('.btn-att.permission').classList.contains('active');
+        const isAbsent = card.querySelector('.btn-att.absent').classList.contains('active');
+        const status = isPermission ? 'permission' : (isAbsent ? 'absent' : 'present');
+        attendanceRecords[selectedClassName][name] = { status, sex };
+    });
+}
+
+// ========== CALCULATE ALL CLASS TOTALS (deduplicated) ==========
 function calculateAllClassTotals() {
+    // Use a Set to track unique student names for grand total
+    let uniqueStudents = new Set();
+    let uniqueFemaleStudents = new Set();
+
     let morningTotal = 0, morningFemale = 0;
     let afternoonTotal = 0, afternoonFemale = 0;
-    let grandTotal = 0, grandTotalFemale = 0;
 
     Object.keys(studentData).forEach(className => {
         const students = studentData[className];
@@ -1349,14 +1375,52 @@ function calculateAllClassTotals() {
 
         students.forEach(student => {
             const isFemale = student.sex === 'F';
-            grandTotal++;
-            if (isFemale) grandTotalFemale++;
+            // Use name as unique key to avoid double counting
+            uniqueStudents.add(student.name);
+            if (isFemale) uniqueFemaleStudents.add(student.name);
+
             if (isMorning) { morningTotal++; if (isFemale) morningFemale++; }
             if (isAfternoon) { afternoonTotal++; if (isFemale) afternoonFemale++; }
         });
     });
 
-    return { grandTotal, grandTotalFemale, morningTotal, morningFemale, afternoonTotal, afternoonFemale };
+    return {
+        grandTotal: uniqueStudents.size,
+        grandTotalFemale: uniqueFemaleStudents.size,
+        morningTotal,
+        morningFemale,
+        afternoonTotal,
+        afternoonFemale
+    };
+}
+
+// ========== CALCULATE ABSENCE FROM STORED RECORDS ==========
+function calculateAbsenceFromRecords(sessionType) {
+    // sessionType: 'morning' or 'afternoon'
+    let absent = 0, absentFemale = 0;
+    let permission = 0, permissionFemale = 0;
+
+    Object.keys(attendanceRecords).forEach(className => {
+        const isMorning = className.includes('ព្រឹក') || className.toLowerCase().includes('mooning');
+        const isAfternoon = className.includes('រសៀល') || className.toLowerCase().includes('evening');
+
+        const matchSession = (sessionType === 'morning' && isMorning) ||
+                             (sessionType === 'afternoon' && isAfternoon);
+        if (!matchSession) return;
+
+        Object.values(attendanceRecords[className]).forEach(record => {
+            const isFemale = record.sex === 'F';
+            if (record.status === 'absent') {
+                absent++;
+                if (isFemale) absentFemale++;
+            } else if (record.status === 'permission') {
+                permission++;
+                if (isFemale) permissionFemale++;
+            }
+        });
+    });
+
+    return { absent, absentFemale, permission, permissionFemale };
 }
 
 // ========== SEND MORNING SUMMARY TO TELEGRAM ==========
@@ -1364,33 +1428,18 @@ async function sendMorningSummaryToTelegram() {
     const SUMMARY_CHAT_ID = '-1003814592979';
     const date = document.getElementById('attDate').value;
     const totals = calculateAllClassTotals();
-
-    // Count absences from ALL morning classes attendance records
-    // We use stored attendance data per class
-    let morningAbsent = 0, morningAbsentFemale = 0;
-    let morningPermission = 0, morningPermissionFemale = 0;
-
-    document.querySelectorAll('.student-card').forEach(card => {
-        const currentClass = document.getElementById('displayClass').innerText;
-        const isMorningClass = currentClass.includes('ព្រឹក') || currentClass.toLowerCase().includes('mooning');
-        if (!isMorningClass) return;
-
-        const isFemale = card.getAttribute('data-sex') === 'F';
-        const isPermission = card.querySelector('.btn-att.permission').classList.contains('active');
-        const isAbsent = card.querySelector('.btn-att.absent').classList.contains('active');
-
-        if (isPermission) { morningPermission++; if (isFemale) morningPermissionFemale++; }
-        if (isAbsent) { morningAbsent++; if (isFemale) morningAbsentFemale++; }
-    });
+    const absences = calculateAbsenceFromRecords('morning');
+    const totalAbsent = absences.absent + absences.permission;
+    const totalAbsentFemale = absences.absentFemale + absences.permissionFemale;
 
     let message = `📊 *របាយការណ៍វត្តមានប្រចាំថ្ងៃ*\n`;
     message += `📅 *ថ្ងៃទី:* ${date}\n\n`;
     message += `━━━━━━━━━━━━━━━━━━\n`;
     message += `🌅 *ពេលព្រឹក*\n`;
     message += `• សិស្សសរុប: ${totals.morningTotal} នាក់ (ស្រី ${totals.morningFemale} នាក់)\n`;
-    message += `• អវត្តមានសរុប: ${morningAbsent + morningPermission} នាក់ (ស្រី ${morningAbsentFemale + morningPermissionFemale} នាក់)\n`;
-    message += `  - ច្បាប់: ${morningPermission} នាក់ (ស្រី ${morningPermissionFemale} នាក់)\n`;
-    message += `  - ឥតច្បាប់: ${morningAbsent} នាក់ (ស្រី ${morningAbsentFemale} នាក់)\n`;
+    message += `• អវត្តមានសរុប: ${totalAbsent} នាក់ (ស្រី ${totalAbsentFemale} នាក់)\n`;
+    message += `  - ច្បាប់: ${absences.permission} នាក់ (ស្រី ${absences.permissionFemale} នាក់)\n`;
+    message += `  - ឥតច្បាប់: ${absences.absent} នាក់ (ស្រី ${absences.absentFemale} នាក់)`;
 
     try {
         const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -1411,31 +1460,18 @@ async function sendAfternoonSummaryToTelegram() {
     const SUMMARY_CHAT_ID = '-1003814592979';
     const date = document.getElementById('attDate').value;
     const totals = calculateAllClassTotals();
-
-    let afternoonAbsent = 0, afternoonAbsentFemale = 0;
-    let afternoonPermission = 0, afternoonPermissionFemale = 0;
-
-    document.querySelectorAll('.student-card').forEach(card => {
-        const currentClass = document.getElementById('displayClass').innerText;
-        const isAfternoonClass = currentClass.includes('រសៀល') || currentClass.toLowerCase().includes('evening');
-        if (!isAfternoonClass) return;
-
-        const isFemale = card.getAttribute('data-sex') === 'F';
-        const isPermission = card.querySelector('.btn-att.permission').classList.contains('active');
-        const isAbsent = card.querySelector('.btn-att.absent').classList.contains('active');
-
-        if (isPermission) { afternoonPermission++; if (isFemale) afternoonPermissionFemale++; }
-        if (isAbsent) { afternoonAbsent++; if (isFemale) afternoonAbsentFemale++; }
-    });
+    const absences = calculateAbsenceFromRecords('afternoon');
+    const totalAbsent = absences.absent + absences.permission;
+    const totalAbsentFemale = absences.absentFemale + absences.permissionFemale;
 
     let message = `📊 *របាយការណ៍វត្តមានប្រចាំថ្ងៃ*\n`;
     message += `📅 *ថ្ងៃទី:* ${date}\n\n`;
     message += `━━━━━━━━━━━━━━━━━━\n`;
     message += `🌆 *ពេលរសៀល*\n`;
     message += `• សិស្សសរុប: ${totals.afternoonTotal} នាក់ (ស្រី ${totals.afternoonFemale} នាក់)\n`;
-    message += `• អវត្តមានសរុប: ${afternoonAbsent + afternoonPermission} នាក់ (ស្រី ${afternoonAbsentFemale + afternoonPermissionFemale} នាក់)\n`;
-    message += `  - ច្បាប់: ${afternoonPermission} នាក់ (ស្រី ${afternoonPermissionFemale} នាក់)\n`;
-    message += `  - ឥតច្បាប់: ${afternoonAbsent} នាក់ (ស្រី ${afternoonAbsentFemale} នាក់)\n`;
+    message += `• អវត្តមានសរុប: ${totalAbsent} នាក់ (ស្រី ${totalAbsentFemale} នាក់)\n`;
+    message += `  - ច្បាប់: ${absences.permission} នាក់ (ស្រី ${absences.permissionFemale} នាក់)\n`;
+    message += `  - ឥតច្បាប់: ${absences.absent} នាក់ (ស្រី ${absences.absentFemale} នាក់)`;
 
     try {
         const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -1451,47 +1487,26 @@ async function sendAfternoonSummaryToTelegram() {
     }
 }
 
-// ========== SYNC ATTENDANCE TO REPORT (background, no tab switch) ==========
+// ========== SYNC ATTENDANCE TO REPORT (background) ==========
 function syncAttendanceToReport() {
     const totals = calculateAllClassTotals();
-
-    let morningAbsent = 0, morningAbsentFemale = 0;
-    let morningPermission = 0, morningPermissionFemale = 0;
-    let afternoonAbsent = 0, afternoonAbsentFemale = 0;
-    let afternoonPermission = 0, afternoonPermissionFemale = 0;
-
-    document.querySelectorAll('.student-card').forEach(card => {
-        const currentClass = document.getElementById('displayClass').innerText;
-        const isMorning = currentClass.includes('ព្រឹក') || currentClass.toLowerCase().includes('mooning');
-        const isAfternoon = currentClass.includes('រសៀល') || currentClass.toLowerCase().includes('evening');
-        const isFemale = card.getAttribute('data-sex') === 'F';
-        const isPermission = card.querySelector('.btn-att.permission').classList.contains('active');
-        const isAbsent = card.querySelector('.btn-att.absent').classList.contains('active');
-
-        if (isMorning) {
-            if (isPermission) { morningPermission++; if (isFemale) morningPermissionFemale++; }
-            if (isAbsent) { morningAbsent++; if (isFemale) morningAbsentFemale++; }
-        }
-        if (isAfternoon) {
-            if (isPermission) { afternoonPermission++; if (isFemale) afternoonPermissionFemale++; }
-            if (isAbsent) { afternoonAbsent++; if (isFemale) afternoonAbsentFemale++; }
-        }
-    });
+    const morningAbs = calculateAbsenceFromRecords('morning');
+    const afternoonAbs = calculateAbsenceFromRecords('afternoon');
 
     document.getElementById('totalStudents').value = totals.grandTotal;
     document.getElementById('totalFemaleStudents').value = totals.grandTotalFemale;
     document.getElementById('morningTotal').value = totals.morningTotal;
     document.getElementById('morningFemale').value = totals.morningFemale;
-    document.getElementById('morningAbsentTotal').value = morningAbsent;
-    document.getElementById('morningAbsentFemale').value = morningAbsentFemale;
-    document.getElementById('morningParentPermission').value = morningPermission;
-    document.getElementById('morningParentPermissionFemale').value = morningPermissionFemale;
+    document.getElementById('morningAbsentTotal').value = morningAbs.absent;
+    document.getElementById('morningAbsentFemale').value = morningAbs.absentFemale;
+    document.getElementById('morningParentPermission').value = morningAbs.permission;
+    document.getElementById('morningParentPermissionFemale').value = morningAbs.permissionFemale;
     document.getElementById('afternoonTotal').value = totals.afternoonTotal;
     document.getElementById('afternoonFemale').value = totals.afternoonFemale;
-    document.getElementById('afternoonAbsentTotal').value = afternoonAbsent;
-    document.getElementById('afternoonAbsentFemale').value = afternoonAbsentFemale;
-    document.getElementById('afternoonParentPermission').value = afternoonPermission;
-    document.getElementById('afternoonParentPermissionFemale').value = afternoonPermissionFemale;
+    document.getElementById('afternoonAbsentTotal').value = afternoonAbs.absent;
+    document.getElementById('afternoonAbsentFemale').value = afternoonAbs.absentFemale;
+    document.getElementById('afternoonParentPermission').value = afternoonAbs.permission;
+    document.getElementById('afternoonParentPermissionFemale').value = afternoonAbs.permissionFemale;
 }
 
 // ========== STATISTICS REPORT FUNCTIONS ==========
