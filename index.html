@@ -651,15 +651,13 @@
                     </div>
                 </div>
 
-                <button class="btn-main" onclick="syncAttendanceToReport()" style="background: #4e73df; margin-bottom: 15px; width: 100%;">
-                    📊 ផ្ទេរទិន្នន័យទៅរបាយការណ៍ស្ថិតិ
-                </button>
-
                 <div class="list-header">បញ្ជីសិស្ស</div>
                 <div id="studentContainer"></div>
 
-                <div class="bottom-actions">
-                    <button class="btn-main btn-telegram" onclick="sendAttendanceToTelegram()">📤 ផ្ញើទៅ Telegram</button>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                    <button class="btn-main" style="background:#e67e22;" onclick="sendMorningSummaryToTelegram()">🌅 សង្ខេបព្រឹក → Telegram</button>
+                    <button class="btn-main" style="background:#8e44ad;" onclick="sendAfternoonSummaryToTelegram()">🌆 សង្ខេបរសៀល → Telegram</button>
+                    <button class="btn-main btn-telegram" onclick="sendAttendanceToTelegram()">📤 ផ្ញើវត្តមានថ្នាក់ → Telegram</button>
                     <button class="btn-main btn-excel" onclick="exportToExcel()">📥 រក្សាទុកជា Excel</button>
                 </div>
             </div>
@@ -1121,15 +1119,14 @@ const classChatIds = {
     'ថ្នាក់មត្តេយ្យកម្រិតមធ្យម(ព្រឹក)': '-4845440768',
     'ថ្នាក់មត្តេយ្យកម្រិតមធ្យម(រសៀល)': '-4845440768',
     'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់(ព្រឹក)': '-4828804361',
-    'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់(រសៀល)': '-4828804361',
+    'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់(រសៀល)': '-4828804361', 
     'ថ្នាក់ទី១(ព្រឹក)': '-4936041559',
     'ថ្នាក់ទី១(រសៀល)': '-4936041559',
     'ថ្នាក់ទី២(ព្រឹក)': '-4953929888',
     'ថ្នាក់ទី២(រសៀល)': '-4953929888',
     'ថ្នាក់ទី៣(រសៀល)': '-4872387682',
-    'ថ្នាក់ទី៤ ': '-4844052526',
-    'ថ្នាក់ទី៥': '-4712921883',
-    'Fount1 morning': '-4986675448',
+    'ថ្នាក់ទី៤ ៥': '-4844052526',
+    'Fount1 mooning': '-4986675448',
     'Fount1 Evening': '-4986675448',
     'Nursery(ព្រឹក)': '-4924159874',
     'Nursery(រសៀល)': '-4924159874',
@@ -1137,8 +1134,8 @@ const classChatIds = {
     'Fount2(narein)': '-4871212513',
     'Level1': '-4906276801',
     'Level2': '-4968404918',
-    'មត្តេយ្យកម្រិតទាប(ព្រឹក)': '-4835279036',
-    'មត្តេយ្យកម្រិតទាប(រសៀល)': '-4835279036'
+    'មត្ដេយ្យកម្រិតទាប(ព្រឹក)': '-4835279036',
+    'មត្ដេយ្យកម្រិតទាប(រសៀល)': '-4835279036'
 };
 
 const TELEGRAM_BOT_TOKEN = '8501623225:AAGu-F_GHSQ-dLBrEME7eidOpW2yDf3qvXw';
@@ -1339,112 +1336,162 @@ function exportToExcel() {
     alert('Feature coming soon!');
 }
 
-// ========== SYNC ATTENDANCE TO REPORT ==========
-function syncAttendanceToReport() {
-    // Calculate totals from all classes
-    let morningTotal = 0;
-    let morningFemale = 0;
-    let morningAbsent = 0;
-    let morningAbsentFemale = 0;
-    let morningPermission = 0;
-    let morningPermissionFemale = 0;
-    
-    let afternoonTotal = 0;
-    let afternoonFemale = 0;
-    let afternoonAbsent = 0;
-    let afternoonAbsentFemale = 0;
-    let afternoonPermission = 0;
-    let afternoonPermissionFemale = 0;
-    
-    let grandTotal = 0;
-    let grandTotalFemale = 0;
-    
-    // Loop through all classes and count
+// ========== CALCULATE ALL CLASS TOTALS ==========
+function calculateAllClassTotals() {
+    let morningTotal = 0, morningFemale = 0;
+    let afternoonTotal = 0, afternoonFemale = 0;
+    let grandTotal = 0, grandTotalFemale = 0;
+
     Object.keys(studentData).forEach(className => {
         const students = studentData[className];
         const isMorning = className.includes('ព្រឹក') || className.toLowerCase().includes('mooning');
         const isAfternoon = className.includes('រសៀល') || className.toLowerCase().includes('evening');
-        
+
         students.forEach(student => {
             const isFemale = student.sex === 'F';
-            
-            // Add to grand total
             grandTotal++;
             if (isFemale) grandTotalFemale++;
-            
-            // Add to morning/afternoon
-            if (isMorning) {
-                morningTotal++;
-                if (isFemale) morningFemale++;
-            }
-            if (isAfternoon) {
-                afternoonTotal++;
-                if (isFemale) afternoonFemale++;
-            }
+            if (isMorning) { morningTotal++; if (isFemale) morningFemale++; }
+            if (isAfternoon) { afternoonTotal++; if (isFemale) afternoonFemale++; }
         });
     });
-    
-    // Now count absences from current attendance check
+
+    return { grandTotal, grandTotalFemale, morningTotal, morningFemale, afternoonTotal, afternoonFemale };
+}
+
+// ========== SEND MORNING SUMMARY TO TELEGRAM ==========
+async function sendMorningSummaryToTelegram() {
+    const SUMMARY_CHAT_ID = '-1003814592979';
+    const date = document.getElementById('attDate').value;
+    const totals = calculateAllClassTotals();
+
+    // Count absences from ALL morning classes attendance records
+    // We use stored attendance data per class
+    let morningAbsent = 0, morningAbsentFemale = 0;
+    let morningPermission = 0, morningPermissionFemale = 0;
+
     document.querySelectorAll('.student-card').forEach(card => {
+        const currentClass = document.getElementById('displayClass').innerText;
+        const isMorningClass = currentClass.includes('ព្រឹក') || currentClass.toLowerCase().includes('mooning');
+        if (!isMorningClass) return;
+
         const isFemale = card.getAttribute('data-sex') === 'F';
-        const className = document.getElementById('displayClass').innerText;
-        const isMorning = className.includes('ព្រឹក') || className.toLowerCase().includes('mooning');
-        const isAfternoon = className.includes('រសៀល') || className.toLowerCase().includes('evening');
-        
         const isPermission = card.querySelector('.btn-att.permission').classList.contains('active');
         const isAbsent = card.querySelector('.btn-att.absent').classList.contains('active');
-        
-        if (isPermission) {
-            if (isMorning) {
-                morningPermission++;
-                if (isFemale) morningPermissionFemale++;
-            }
-            if (isAfternoon) {
-                afternoonPermission++;
-                if (isFemale) afternoonPermissionFemale++;
-            }
+
+        if (isPermission) { morningPermission++; if (isFemale) morningPermissionFemale++; }
+        if (isAbsent) { morningAbsent++; if (isFemale) morningAbsentFemale++; }
+    });
+
+    let message = `📊 *របាយការណ៍វត្តមានប្រចាំថ្ងៃ*\n`;
+    message += `📅 *ថ្ងៃទី:* ${date}\n\n`;
+    message += `━━━━━━━━━━━━━━━━━━\n`;
+    message += `🌅 *ពេលព្រឹក*\n`;
+    message += `• សិស្សសរុប: ${totals.morningTotal} នាក់ (ស្រី ${totals.morningFemale} នាក់)\n`;
+    message += `• អវត្តមានសរុប: ${morningAbsent + morningPermission} នាក់ (ស្រី ${morningAbsentFemale + morningPermissionFemale} នាក់)\n`;
+    message += `  - ច្បាប់: ${morningPermission} នាក់ (ស្រី ${morningPermissionFemale} នាក់)\n`;
+    message += `  - ឥតច្បាប់: ${morningAbsent} នាក់ (ស្រី ${morningAbsentFemale} នាក់)\n`;
+
+    try {
+        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: SUMMARY_CHAT_ID, text: message, parse_mode: 'Markdown' })
+        });
+        const result = await res.json();
+        if (result.ok) alert('✅ បានផ្ញើសង្ខេបព្រឹកទៅ Telegram!');
+        else alert('❌ ' + (result.description || 'Error'));
+    } catch (e) {
+        alert('❌ មានបញ្ហាតភ្ជាប់ Telegram');
+    }
+}
+
+// ========== SEND AFTERNOON SUMMARY TO TELEGRAM ==========
+async function sendAfternoonSummaryToTelegram() {
+    const SUMMARY_CHAT_ID = '-1003814592979';
+    const date = document.getElementById('attDate').value;
+    const totals = calculateAllClassTotals();
+
+    let afternoonAbsent = 0, afternoonAbsentFemale = 0;
+    let afternoonPermission = 0, afternoonPermissionFemale = 0;
+
+    document.querySelectorAll('.student-card').forEach(card => {
+        const currentClass = document.getElementById('displayClass').innerText;
+        const isAfternoonClass = currentClass.includes('រសៀល') || currentClass.toLowerCase().includes('evening');
+        if (!isAfternoonClass) return;
+
+        const isFemale = card.getAttribute('data-sex') === 'F';
+        const isPermission = card.querySelector('.btn-att.permission').classList.contains('active');
+        const isAbsent = card.querySelector('.btn-att.absent').classList.contains('active');
+
+        if (isPermission) { afternoonPermission++; if (isFemale) afternoonPermissionFemale++; }
+        if (isAbsent) { afternoonAbsent++; if (isFemale) afternoonAbsentFemale++; }
+    });
+
+    let message = `📊 *របាយការណ៍វត្តមានប្រចាំថ្ងៃ*\n`;
+    message += `📅 *ថ្ងៃទី:* ${date}\n\n`;
+    message += `━━━━━━━━━━━━━━━━━━\n`;
+    message += `🌆 *ពេលរសៀល*\n`;
+    message += `• សិស្សសរុប: ${totals.afternoonTotal} នាក់ (ស្រី ${totals.afternoonFemale} នាក់)\n`;
+    message += `• អវត្តមានសរុប: ${afternoonAbsent + afternoonPermission} នាក់ (ស្រី ${afternoonAbsentFemale + afternoonPermissionFemale} នាក់)\n`;
+    message += `  - ច្បាប់: ${afternoonPermission} នាក់ (ស្រី ${afternoonPermissionFemale} នាក់)\n`;
+    message += `  - ឥតច្បាប់: ${afternoonAbsent} នាក់ (ស្រី ${afternoonAbsentFemale} នាក់)\n`;
+
+    try {
+        const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: SUMMARY_CHAT_ID, text: message, parse_mode: 'Markdown' })
+        });
+        const result = await res.json();
+        if (result.ok) alert('✅ បានផ្ញើសង្ខេបរសៀលទៅ Telegram!');
+        else alert('❌ ' + (result.description || 'Error'));
+    } catch (e) {
+        alert('❌ មានបញ្ហាតភ្ជាប់ Telegram');
+    }
+}
+
+// ========== SYNC ATTENDANCE TO REPORT (background, no tab switch) ==========
+function syncAttendanceToReport() {
+    const totals = calculateAllClassTotals();
+
+    let morningAbsent = 0, morningAbsentFemale = 0;
+    let morningPermission = 0, morningPermissionFemale = 0;
+    let afternoonAbsent = 0, afternoonAbsentFemale = 0;
+    let afternoonPermission = 0, afternoonPermissionFemale = 0;
+
+    document.querySelectorAll('.student-card').forEach(card => {
+        const currentClass = document.getElementById('displayClass').innerText;
+        const isMorning = currentClass.includes('ព្រឹក') || currentClass.toLowerCase().includes('mooning');
+        const isAfternoon = currentClass.includes('រសៀល') || currentClass.toLowerCase().includes('evening');
+        const isFemale = card.getAttribute('data-sex') === 'F';
+        const isPermission = card.querySelector('.btn-att.permission').classList.contains('active');
+        const isAbsent = card.querySelector('.btn-att.absent').classList.contains('active');
+
+        if (isMorning) {
+            if (isPermission) { morningPermission++; if (isFemale) morningPermissionFemale++; }
+            if (isAbsent) { morningAbsent++; if (isFemale) morningAbsentFemale++; }
         }
-        
-        if (isAbsent) {
-            if (isMorning) {
-                morningAbsent++;
-                if (isFemale) morningAbsentFemale++;
-            }
-            if (isAfternoon) {
-                afternoonAbsent++;
-                if (isFemale) afternoonAbsentFemale++;
-            }
+        if (isAfternoon) {
+            if (isPermission) { afternoonPermission++; if (isFemale) afternoonPermissionFemale++; }
+            if (isAbsent) { afternoonAbsent++; if (isFemale) afternoonAbsentFemale++; }
         }
     });
-    
-    // Switch to statistics tab
-    document.querySelector('.main-tab:nth-child(2)').click();
-    
-    // Wait a bit for tab to switch
-    setTimeout(() => {
-        // Fill in the values
-        document.getElementById('totalStudents').value = grandTotal;
-        document.getElementById('totalFemaleStudents').value = grandTotalFemale;
-        
-        document.getElementById('morningTotal').value = morningTotal;
-        document.getElementById('morningFemale').value = morningFemale;
-        document.getElementById('morningAbsentTotal').value = morningAbsent;
-        document.getElementById('morningAbsentFemale').value = morningAbsentFemale;
-        document.getElementById('morningParentPermission').value = morningPermission;
-        document.getElementById('morningParentPermissionFemale').value = morningPermissionFemale;
-        
-        document.getElementById('afternoonTotal').value = afternoonTotal;
-        document.getElementById('afternoonFemale').value = afternoonFemale;
-        document.getElementById('afternoonAbsentTotal').value = afternoonAbsent;
-        document.getElementById('afternoonAbsentFemale').value = afternoonAbsentFemale;
-        document.getElementById('afternoonParentPermission').value = afternoonPermission;
-        document.getElementById('afternoonParentPermissionFemale').value = afternoonPermissionFemale;
-        
-        alert(`✅ ផ្ទេរទិន្នន័យរួចរាល់!\n\n` +
-              `👥 សិស្សសរុប: ${grandTotal} នាក់ (ស្រី ${grandTotalFemale})\n` +
-              `🌅 ពេលព្រឹក: ${morningTotal} នាក់ (ស្រី ${morningFemale})\n` +
-              `🌆 ពេលរសៀល: ${afternoonTotal} នាក់ (ស្រី ${afternoonFemale})`);
-    }, 300);
+
+    document.getElementById('totalStudents').value = totals.grandTotal;
+    document.getElementById('totalFemaleStudents').value = totals.grandTotalFemale;
+    document.getElementById('morningTotal').value = totals.morningTotal;
+    document.getElementById('morningFemale').value = totals.morningFemale;
+    document.getElementById('morningAbsentTotal').value = morningAbsent;
+    document.getElementById('morningAbsentFemale').value = morningAbsentFemale;
+    document.getElementById('morningParentPermission').value = morningPermission;
+    document.getElementById('morningParentPermissionFemale').value = morningPermissionFemale;
+    document.getElementById('afternoonTotal').value = totals.afternoonTotal;
+    document.getElementById('afternoonFemale').value = totals.afternoonFemale;
+    document.getElementById('afternoonAbsentTotal').value = afternoonAbsent;
+    document.getElementById('afternoonAbsentFemale').value = afternoonAbsentFemale;
+    document.getElementById('afternoonParentPermission').value = afternoonPermission;
+    document.getElementById('afternoonParentPermissionFemale').value = afternoonPermissionFemale;
 }
 
 // ========== STATISTICS REPORT FUNCTIONS ==========
@@ -1463,7 +1510,9 @@ function switchStatsTab(tabName) {
         populateClassDropdowns();
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('reportDate').value = today;
+        // Auto-sync attendance data when opening create tab
         calculateTotalsFromStudentData();
+        syncAttendanceToReport();
     }
 }
 
