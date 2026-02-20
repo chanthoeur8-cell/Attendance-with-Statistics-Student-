@@ -655,9 +655,9 @@
                 <div id="studentContainer"></div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-                    <button class="btn-main" style="background:#e67e22;" onclick="sendMorningSummaryToTelegram()">🌅 សង្ខេបព្រឹក → Telegram</button>
-                    <button class="btn-main" style="background:#8e44ad;" onclick="sendAfternoonSummaryToTelegram()">🌆 សង្ខេបរសៀល → Telegram</button>
-                    <button class="btn-main btn-telegram" onclick="sendAttendanceToTelegram()">📤 ផ្ញើវត្តមានថ្នាក់ → Telegram</button>
+                    <button class="btn-main" style="background:#e67e22;" onclick="sendMorningSummaryToTelegram()">🌅 សរុបវត្តមានព្រឹក → Telegram</button>
+                    <button class="btn-main" style="background:#8e44ad;" onclick="sendAfternoonSummaryToTelegram()">🌆 សរុបវត្តមានរសៀល → Telegram</button>
+                    <button class="btn-main btn-telegram" onclick="sendAttendanceToTelegram()">📤 ផ្ញើវត្តមានទៅថ្នាក់នីមួយៗ → Telegram</button>
                     <button class="btn-main btn-excel" onclick="exportToExcel()">📥 រក្សាទុកជា Excel</button>
                 </div>
             </div>
@@ -689,38 +689,30 @@
                     <div class="form-section">
                         <h3>ស្ថិតិសិស្សសរុប</h3>
                         <div class="form-grid">
-                            <div class="form-group">
-                                <label>សិស្សសរុបទាំងព្រឹកនិងរសៀល (នាក់) *</label>
-                                <input type="number" id="totalStudents" min="0" required readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>សិស្សស្រីសរុប (នាក់) *</label>
-                                <input type="number" id="totalFemaleStudents" min="0" required readonly>
+                            <!-- ✅ CHANGED: merged totalStudents + totalFemaleStudents into one row -->
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label>សិស្សសរុប (នាក់) *</label>
+                                <div style="display:flex;gap:12px;align-items:center;">
+                                    <input type="number" id="totalStudents" min="0" required style="flex:1;min-width:0;padding:12px;border:2px solid #e0e0e0;border-radius:8px;font-family:inherit;font-size:15px;">
+                                    <span style="white-space:nowrap;color:#5a5c69;font-size:15px;font-family:inherit;">(ស្រី <span id="totalFemaleDisplay">0</span> នាក់)</span>
+                                </div>
+                                <input type="number" id="totalFemaleStudents" min="0" required style="display:none;">
                             </div>
                             <div class="form-group">
                                 <label>សិស្សរៀនពេញម៉ោង (នាក់)</label>
                                 <input type="number" id="fullTimeStudents" min="0" value="0">
                             </div>
+                            <input type="number" id="fullTimeFemale" min="0" value="0" style="display:none;">
                             <div class="form-group">
-                                <label>សិស្សស្រីរៀនពេញម៉ោង (នាក់)</label>
-                                <input type="number" id="fullTimeFemale" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>សិស្សតែកម្មវិធីភាសាខ្មែរសរុប (នាក់)</label>
+                                <label>សិស្សរៀនតែកម្មវិធីភាសាខ្មែរសរុប (នាក់)</label>
                                 <input type="number" id="khmerOnlyTotal" min="0" value="0">
                             </div>
+                            <input type="number" id="khmerOnlyFemale" min="0" value="0" style="display:none;">
                             <div class="form-group">
-                                <label>សិស្សស្រីតែកម្មវិធីភាសាខ្មែរ (នាក់)</label>
-                                <input type="number" id="khmerOnlyFemale" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>សិស្សតែកម្មវិធីភាសាអង់គ្លេសសរុប (នាក់)</label>
+                                <label>សិស្សរៀនតែកម្មវិធីភាសាអង់គ្លេសសរុប (នាក់)</label>
                                 <input type="number" id="englishOnlyTotal" min="0" value="0">
                             </div>
-                            <div class="form-group">
-                                <label>សិស្សស្រីតែកម្មវិធីភាសាអង់គ្លេស (នាក់)</label>
-                                <input type="number" id="englishOnlyFemale" min="0" value="0">
-                            </div>
+                            <input type="number" id="englishOnlyFemale" min="0" value="0" style="display:none;">
                         </div>
                     </div>
 
@@ -731,9 +723,15 @@
                                 <label>សិស្សសាកល្បងសរុប (នាក់) *</label>
                                 <input type="number" id="trialStudentsTotal" min="0" value="0" onchange="generateTrialStudentFields()">
                             </div>
+                            <input type="number" id="trialFemale" min="0" value="0" style="display:none;">
                             <div class="form-group">
-                                <label>សិស្សស្រីសាកល្បង (នាក់)</label>
-                                <input type="number" id="trialFemale" min="0" value="0">
+                                <label>កម្មវិធីសិក្សា</label>
+                                <select id="trialProgram">
+                                    <option value="">-- ជ្រើសរើស --</option>
+                                    <option value="full">ពេញកម្មវិធីសិក្សា</option>
+                                    <option value="khmer">តែកម្មវិធីសិក្សាភាសាខ្មែរ</option>
+                                    <option value="english">តែកម្មវិធីសិក្សាភាសាអង់គ្លេស</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>ថ្ងៃខែឆ្នាំសាកល្បង</label>
@@ -754,10 +752,7 @@
                                 <label>សិស្សទទួលការមើលថែរសរុប (នាក់)</label>
                                 <input type="number" id="careServiceTotal" min="0" value="0">
                             </div>
-                            <div class="form-group">
-                                <label>សិស្សស្រីទទួលការមើលថែរ (នាក់)</label>
-                                <input type="number" id="careServiceFemale" min="0" value="0">
-                            </div>
+                            <input type="number" id="careServiceFemale" min="0" value="0" style="display:none;">
                         </div>
                         
                         <h4 style="color: #667eea; margin: 20px 0 10px 0;">សិស្សទទួលការមើលថែរថ្មី</h4>
@@ -773,6 +768,15 @@
                                 <label>ជ្រើសរើសសិស្ស</label>
                                 <select id="newCareStudentSelect">
                                     <option value="">-- ជ្រើសរើសសិស្ស --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>កម្មវិធីសិក្សា</label>
+                                <select id="newCareStudentProgram">
+                                    <option value="">-- ជ្រើសរើស --</option>
+                                    <option value="full">ពេញកម្មវិធីសិក្សា</option>
+                                    <option value="khmer">តែកម្មវិធីសិក្សាភាសាខ្មែរ</option>
+                                    <option value="english">តែកម្មវិធីសិក្សាភាសាអង់គ្លេស</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -809,81 +813,25 @@
                         <button type="button" class="btn-main btn-danger" onclick="addStopCareStudent()" style="margin-top: 10px;">+ បន្ថែមសិស្សឈប់ទទួលការមើលថែរ</button>
                     </div>
 
-                    <div class="form-section">
-                        <h3>ពេលព្រឹក</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>សិស្សសរុប (នាក់)</label>
-                                <input type="number" id="morningTotal" min="0" value="0" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>សិស្សស្រី (នាក់)</label>
-                                <input type="number" id="morningFemale" min="0" value="0" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>អវត្តមានសរុប (នាក់)</label>
-                                <input type="number" id="morningAbsentTotal" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>អវត្តមានស្រី (នាក់)</label>
-                                <input type="number" id="morningAbsentFemale" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>អាណាព្យាបាលនាក់សុំ (នាក់)</label>
-                                <input type="number" id="morningParentPermission" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>អាណាព្យាបាលស្រីនាក់សុំ (នាក់)</label>
-                                <input type="number" id="morningParentPermissionFemale" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>សាលាទាក់ទងទៅសួរ (នាក់)</label>
-                                <input type="number" id="morningSchoolContact" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>សាលាទាក់ទងស្រី (នាក់)</label>
-                                <input type="number" id="morningSchoolContactFemale" min="0" value="0">
-                            </div>
-                        </div>
-                    </div>
+                    <!-- hidden morning fields for JS -->
+                    <input type="number" id="morningTotal" min="0" value="0" readonly style="display:none;">
+                    <input type="number" id="morningFemale" min="0" value="0" readonly style="display:none;">
+                    <input type="number" id="morningAbsentTotal" min="0" value="0" style="display:none;">
+                    <input type="number" id="morningAbsentFemale" min="0" value="0" style="display:none;">
+                    <input type="number" id="morningParentPermission" min="0" value="0" style="display:none;">
+                    <input type="number" id="morningParentPermissionFemale" min="0" value="0" style="display:none;">
+                    <input type="number" id="morningSchoolContact" min="0" value="0" style="display:none;">
+                    <input type="number" id="morningSchoolContactFemale" min="0" value="0" style="display:none;">
 
-                    <div class="form-section">
-                        <h3>ពេលរសៀល</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>សិស្សសរុប (នាក់)</label>
-                                <input type="number" id="afternoonTotal" min="0" value="0" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>សិស្សស្រី (នាក់)</label>
-                                <input type="number" id="afternoonFemale" min="0" value="0" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>អវត្តមានសរុប (នាក់)</label>
-                                <input type="number" id="afternoonAbsentTotal" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>អវត្តមានស្រី (នាក់)</label>
-                                <input type="number" id="afternoonAbsentFemale" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>អាណាព្យាបាលនាក់សុំ (នាក់)</label>
-                                <input type="number" id="afternoonParentPermission" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>អាណាព្យាបាលស្រីនាក់សុំ (នាក់)</label>
-                                <input type="number" id="afternoonParentPermissionFemale" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>សាលាទាក់ទងទៅសួរ (នាក់)</label>
-                                <input type="number" id="afternoonSchoolContact" min="0" value="0">
-                            </div>
-                            <div class="form-group">
-                                <label>សាលាទាក់ទងស្រី (នាក់)</label>
-                                <input type="number" id="afternoonSchoolContactFemale" min="0" value="0">
-                            </div>
-                        </div>
-                    </div>
+                    <!-- hidden afternoon fields for JS -->
+                    <input type="number" id="afternoonTotal" min="0" value="0" readonly style="display:none;">
+                    <input type="number" id="afternoonFemale" min="0" value="0" readonly style="display:none;">
+                    <input type="number" id="afternoonAbsentTotal" min="0" value="0" style="display:none;">
+                    <input type="number" id="afternoonAbsentFemale" min="0" value="0" style="display:none;">
+                    <input type="number" id="afternoonParentPermission" min="0" value="0" style="display:none;">
+                    <input type="number" id="afternoonParentPermissionFemale" min="0" value="0" style="display:none;">
+                    <input type="number" id="afternoonSchoolContact" min="0" value="0" style="display:none;">
+                    <input type="number" id="afternoonSchoolContactFemale" min="0" value="0" style="display:none;">
 
                     <div class="form-section">
                         <h3>សិស្សចូលថ្មី</h3>
@@ -910,6 +858,15 @@
                             <div class="form-group">
                                 <label>កាលបរិច្ឆេទចូល</label>
                                 <input type="date" id="newStudentDate">
+                            </div>
+                            <div class="form-group">
+                                <label>កម្មវិធីសិក្សា</label>
+                                <select id="newStudentProgram">
+                                    <option value="">-- ជ្រើសរើស --</option>
+                                    <option value="full">ពេញកម្មវិធីសិក្សា</option>
+                                    <option value="khmer">តែកម្មវិធីសិក្សាភាសាខ្មែរ</option>
+                                    <option value="english">តែកម្មវិធីសិក្សាភាសាអង់គ្លេស</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>រយៈពេលបង់ថ្លៃសិក្សា</label>
@@ -1148,6 +1105,13 @@ let trialStudentsArray = [];
 let newCareStudentsArray = [];
 let stopCareStudentsArray = [];
 
+// ✅ NEW: Sync female count display span next to total students input
+function syncFemaleDisplay() {
+    const val = document.getElementById('totalFemaleStudents').value || '0';
+    const span = document.getElementById('totalFemaleDisplay');
+    if (span) span.textContent = val;
+}
+
 // Load data from localStorage
 function loadStudentData() {
     const saved = localStorage.getItem('studentDataMIKIDS');
@@ -1239,7 +1203,6 @@ function renderStudents(className) {
         card.setAttribute('data-id', s.id);
         card.setAttribute('data-sex', s.sex);
 
-        // Restore saved attendance status if exists
         const savedRecord = attendanceRecords[className] && attendanceRecords[className][s.name];
         const savedStatus = savedRecord ? savedRecord.status : 'present';
 
@@ -1332,7 +1295,6 @@ async function sendAttendanceToTelegram() {
 }
 
 // ========== ATTENDANCE STORAGE PER CLASS ==========
-// Stores attendance results: { className: { studentName: 'present'|'permission'|'absent' } }
 let attendanceRecords = {};
 
 function mark(btn, type) {
@@ -1340,7 +1302,6 @@ function mark(btn, type) {
     parent.querySelectorAll('.btn-att').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     calculateSummary();
-    // Save attendance for current class
     saveCurrentClassAttendance();
 }
 
@@ -1361,7 +1322,6 @@ function saveCurrentClassAttendance() {
 
 // ========== CALCULATE ALL CLASS TOTALS (deduplicated) ==========
 function calculateAllClassTotals() {
-    // Use a Set to track unique student names for grand total
     let uniqueStudents = new Set();
     let uniqueFemaleStudents = new Set();
 
@@ -1375,7 +1335,6 @@ function calculateAllClassTotals() {
 
         students.forEach(student => {
             const isFemale = student.sex === 'F';
-            // Use name as unique key to avoid double counting
             uniqueStudents.add(student.name);
             if (isFemale) uniqueFemaleStudents.add(student.name);
 
@@ -1396,7 +1355,6 @@ function calculateAllClassTotals() {
 
 // ========== CALCULATE ABSENCE FROM STORED RECORDS ==========
 function calculateAbsenceFromRecords(sessionType) {
-    // sessionType: 'morning' or 'afternoon'
     let absent = 0, absentFemale = 0;
     let permission = 0, permissionFemale = 0;
 
@@ -1495,6 +1453,7 @@ function syncAttendanceToReport() {
 
     document.getElementById('totalStudents').value = totals.grandTotal;
     document.getElementById('totalFemaleStudents').value = totals.grandTotalFemale;
+    syncFemaleDisplay(); // ✅ update display span
     document.getElementById('morningTotal').value = totals.morningTotal;
     document.getElementById('morningFemale').value = totals.morningFemale;
     document.getElementById('morningAbsentTotal').value = morningAbs.absent;
@@ -1525,7 +1484,6 @@ function switchStatsTab(tabName) {
         populateClassDropdowns();
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('reportDate').value = today;
-        // Auto-sync attendance data when opening create tab
         calculateTotalsFromStudentData();
         syncAttendanceToReport();
     }
@@ -1537,7 +1495,6 @@ function populateClassDropdowns() {
     const newCareClassSelect = document.getElementById('newCareStudentClass');
     const stopCareClassSelect = document.getElementById('stopCareStudentClass');
     
-    // Clear existing options
     newClassSelect.innerHTML = '<option value="">-- ជ្រើសរើសថ្នាក់ --</option>';
     leftClassSelect.innerHTML = '<option value="">-- ជ្រើសរើសថ្នាក់ --</option>';
     newCareClassSelect.innerHTML = '<option value="">-- ជ្រើសរើសថ្នាក់ --</option>';
@@ -1576,16 +1533,10 @@ function generateTrialStudentFields() {
         return;
     }
     
-    // Preserve existing data if count increased
     const currentCount = trialStudentsArray.length;
     if (count > currentCount) {
         for (let i = currentCount; i < count; i++) {
-            trialStudentsArray.push({
-                name: '',
-                gender: '',
-                class: '',
-                program: ''
-            });
+            trialStudentsArray.push({ name: '', gender: '', class: '', program: '' });
         }
     } else if (count < currentCount) {
         trialStudentsArray = trialStudentsArray.slice(0, count);
@@ -1640,8 +1591,6 @@ function generateTrialStudentFields() {
 function updateTrialStudent(index, field, value) {
     if (trialStudentsArray[index]) {
         trialStudentsArray[index][field] = value;
-        
-        // Auto-update female count when gender is selected
         if (field === 'gender') {
             const femaleCount = trialStudentsArray.filter(s => s.gender === 'F').length;
             document.getElementById('trialFemale').value = femaleCount;
@@ -1658,12 +1607,7 @@ function updateLeftStudentList() {
     if (className && studentData[className]) {
         studentData[className].forEach(student => {
             const option = document.createElement('option');
-            option.value = JSON.stringify({
-                name: student.name,
-                class: className,
-                id: student.id,
-                sex: student.sex
-            });
+            option.value = JSON.stringify({ name: student.name, class: className, id: student.id, sex: student.sex });
             option.textContent = `${student.id}. ${student.name} (${student.sex === 'M' ? 'ប្រុស' : 'ស្រី'})`;
             studentSelect.appendChild(option);
         });
@@ -1683,11 +1627,9 @@ function calculateTotalsFromStudentData() {
         const classTotal = students.length;
         const classFemale = students.filter(s => s.sex === 'F').length;
         
-        // Add to grand total
         totalCount += classTotal;
         totalFemaleCount += classFemale;
         
-        // Check if morning or afternoon class
         if (className.includes('ព្រឹក') || className.toLowerCase().includes('mooning')) {
             morningTotal += classTotal;
             morningFemale += classFemale;
@@ -1700,6 +1642,7 @@ function calculateTotalsFromStudentData() {
     
     document.getElementById('totalStudents').value = totalCount;
     document.getElementById('totalFemaleStudents').value = totalFemaleCount;
+    syncFemaleDisplay(); // ✅ update display span
     document.getElementById('morningTotal').value = morningTotal;
     document.getElementById('morningFemale').value = morningFemale;
     document.getElementById('afternoonTotal').value = afternoonTotal;
@@ -1713,50 +1656,30 @@ function addNewStudent() {
     const date = document.getElementById('newStudentDate').value;
     const paymentDuration = document.getElementById('newStudentPaymentDuration').value;
     const customDuration = document.getElementById('customPaymentDuration').value.trim();
+    const programValue = document.getElementById('newStudentProgram').value;
     
     if (!className || !name || !gender || !date) {
         alert('សូមបំពេញព័ត៌មានឲ្យបានគ្រប់គ្រាន់!');
         return;
     }
     
-    // Determine final payment duration text
     let finalPaymentDuration = '';
     if (paymentDuration === 'custom' && customDuration) {
         finalPaymentDuration = customDuration;
     } else if (paymentDuration && paymentDuration !== 'custom') {
-        const durationMap = {
-            '1month': '១ខែ',
-            '3months': '៣ខែ',
-            '6months': '៦ខែ',
-            '1year': '១ឆ្នាំ'
-        };
+        const durationMap = { '1month': '១ខែ', '3months': '៣ខែ', '6months': '៦ខែ', '1year': '១ឆ្នាំ' };
         finalPaymentDuration = durationMap[paymentDuration] || '';
     }
     
-    // Add to temporary array for this report
-    newStudentsArray.push({
-        name: name,
-        class: className,
-        gender: gender,
-        date: date,
-        paymentDuration: finalPaymentDuration
-    });
+    const programTextMap = { 'full': 'ពេញកម្មវិធីសិក្សា', 'khmer': 'តែកម្មវិធីសិក្សាភាសាខ្មែរ', 'english': 'តែកម្មវិធីសិក្សាភាសាអង់គ្លេស' };
+    const finalProgram = programTextMap[programValue] || '';
     
-    // Add to attendance system
-    if (!studentData[className]) {
-        studentData[className] = [];
-    }
+    newStudentsArray.push({ name, class: className, gender, date, paymentDuration: finalPaymentDuration, program: finalProgram });
     
-    const newStudentForAttendance = {
-        id: Date.now().toString().slice(-3),
-        name: name,
-        sex: gender
-    };
-    
-    studentData[className].push(newStudentForAttendance);
+    if (!studentData[className]) studentData[className] = [];
+    studentData[className].push({ id: Date.now().toString().slice(-3), name, sex: gender });
     saveStudentData();
     
-    // Update totals
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     const currentFemaleTotal = parseInt(document.getElementById('totalFemaleStudents').value) || 0;
     
@@ -1764,8 +1687,8 @@ function addNewStudent() {
     if (gender === 'F') {
         document.getElementById('totalFemaleStudents').value = currentFemaleTotal + 1;
     }
+    syncFemaleDisplay(); // ✅ update display span
     
-    // Update morning/afternoon totals based on class
     if (className.includes('ព្រឹក') || className.toLowerCase().includes('mooning')) {
         const morningTotal = parseInt(document.getElementById('morningTotal').value) || 0;
         document.getElementById('morningTotal').value = morningTotal + 1;
@@ -1783,19 +1706,17 @@ function addNewStudent() {
         }
     }
     
-    // Clear inputs
     document.getElementById('newStudentName').value = '';
     document.getElementById('newStudentGender').value = '';
     document.getElementById('newStudentDate').value = '';
+    document.getElementById('newStudentProgram').value = '';
     document.getElementById('newStudentPaymentDuration').value = '';
     document.getElementById('customPaymentDuration').value = '';
     document.getElementById('customPaymentField').style.display = 'none';
     
-    // Update display
     displayNewStudents();
     populateClassDropdowns();
     
-    // Refresh attendance list if viewing that class
     const activeClassElement = document.querySelector('.class-item.active');
     if (activeClassElement && activeClassElement.innerText === className) {
         renderStudents(className);
@@ -1804,16 +1725,12 @@ function addNewStudent() {
 
 function displayNewStudents() {
     const container = document.getElementById('newStudentsList');
-    if (newStudentsArray.length === 0) {
-        container.innerHTML = '';
-        return;
-    }
-    
+    if (newStudentsArray.length === 0) { container.innerHTML = ''; return; }
     container.innerHTML = newStudentsArray.map((student, index) => `
         <div class="student-entry">
             <div class="student-entry-info">
                 <div class="student-entry-name">${student.name}</div>
-                <div class="student-entry-details">ថ្នាក់: ${student.class} | ភេទ: ${student.gender === 'M' ? 'ប្រុស' : 'ស្រី'} | ថ្ងៃចូល: ${student.date}${student.paymentDuration ? ' | បង់: ' + student.paymentDuration : ''}</div>
+                <div class="student-entry-details">ថ្នាក់: ${student.class} | ភេទ: ${student.gender === 'M' ? 'ប្រុស' : 'ស្រី'} | ថ្ងៃចូល: ${student.date}${student.program ? ' | កម្មវិធី: ' + student.program : ''}${student.paymentDuration ? ' | បង់: ' + student.paymentDuration : ''}</div>
             </div>
             <button class="btn-remove" onclick="removeNewStudent(${index})">លុប</button>
         </div>
@@ -1822,17 +1739,13 @@ function displayNewStudents() {
 
 function removeNewStudent(index) {
     const student = newStudentsArray[index];
-    
-    // Subtract from totals
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     document.getElementById('totalStudents').value = Math.max(0, currentTotal - 1);
-    
     if (student.gender === 'F') {
         const currentFemaleTotal = parseInt(document.getElementById('totalFemaleStudents').value) || 0;
         document.getElementById('totalFemaleStudents').value = Math.max(0, currentFemaleTotal - 1);
     }
-    
-    // Update morning/afternoon totals
+    syncFemaleDisplay(); // ✅ update display span
     if (student.class.includes('ព្រឹក') || student.class.toLowerCase().includes('mooning')) {
         const morningTotal = parseInt(document.getElementById('morningTotal').value) || 0;
         document.getElementById('morningTotal').value = Math.max(0, morningTotal - 1);
@@ -1849,7 +1762,6 @@ function removeNewStudent(index) {
             document.getElementById('afternoonFemale').value = Math.max(0, afternoonFemale - 1);
         }
     }
-    
     newStudentsArray.splice(index, 1);
     displayNewStudents();
 }
@@ -1859,32 +1771,18 @@ function addLeftStudent() {
     const date = document.getElementById('leftStudentDate').value;
     const reason = document.getElementById('leftReason').value.trim();
     
-    if (!studentJson || !date) {
-        alert('សូមជ្រើសរើសសិស្ស និងកាលបរិច្ឆេទ!');
-        return;
-    }
+    if (!studentJson || !date) { alert('សូមជ្រើសរើសសិស្ស និងកាលបរិច្ឆេទ!'); return; }
     
     const studentInfo = JSON.parse(studentJson);
+    leftStudentsArray.push({ name: studentInfo.name, class: studentInfo.class, id: studentInfo.id, sex: studentInfo.sex, date, reason: reason || "មិនបានបញ្ជាក់" });
     
-    leftStudentsArray.push({
-        name: studentInfo.name,
-        class: studentInfo.class,
-        id: studentInfo.id,
-        sex: studentInfo.sex,
-        date: date,
-        reason: reason || "មិនបានបញ្ជាក់"
-    });
-    
-    // Subtract from totals
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     document.getElementById('totalStudents').value = Math.max(0, currentTotal - 1);
-    
     if (studentInfo.sex === 'F') {
         const currentFemaleTotal = parseInt(document.getElementById('totalFemaleStudents').value) || 0;
         document.getElementById('totalFemaleStudents').value = Math.max(0, currentFemaleTotal - 1);
     }
-    
-    // Update morning/afternoon totals
+    syncFemaleDisplay(); // ✅ update display span
     if (studentInfo.class.includes('ព្រឹក') || studentInfo.class.toLowerCase().includes('mooning')) {
         const morningTotal = parseInt(document.getElementById('morningTotal').value) || 0;
         document.getElementById('morningTotal').value = Math.max(0, morningTotal - 1);
@@ -1902,7 +1800,6 @@ function addLeftStudent() {
         }
     }
     
-    // Clear inputs
     document.getElementById('leftStudentClass').value = '';
     document.getElementById('leftStudentSelect').value = '';
     document.getElementById('leftStudentDate').value = '';
@@ -1914,11 +1811,7 @@ function addLeftStudent() {
 
 function displayLeftStudents() {
     const container = document.getElementById('leftStudentsList');
-    if (leftStudentsArray.length === 0) {
-        container.innerHTML = '';
-        return;
-    }
-    
+    if (leftStudentsArray.length === 0) { container.innerHTML = ''; return; }
     container.innerHTML = leftStudentsArray.map((student, index) => `
         <div class="student-entry">
             <div class="student-entry-info">
@@ -1932,17 +1825,13 @@ function displayLeftStudents() {
 
 function removeLeftStudent(index) {
     const student = leftStudentsArray[index];
-    
-    // Add back to totals
     const currentTotal = parseInt(document.getElementById('totalStudents').value) || 0;
     document.getElementById('totalStudents').value = currentTotal + 1;
-    
     if (student.sex === 'F') {
         const currentFemaleTotal = parseInt(document.getElementById('totalFemaleStudents').value) || 0;
         document.getElementById('totalFemaleStudents').value = currentFemaleTotal + 1;
     }
-    
-    // Update morning/afternoon totals
+    syncFemaleDisplay(); // ✅ update display span
     if (student.class.includes('ព្រឹក') || student.class.toLowerCase().includes('mooning')) {
         const morningTotal = parseInt(document.getElementById('morningTotal').value) || 0;
         document.getElementById('morningTotal').value = morningTotal + 1;
@@ -1959,7 +1848,6 @@ function removeLeftStudent(index) {
             document.getElementById('afternoonFemale').value = afternoonFemale + 1;
         }
     }
-    
     leftStudentsArray.splice(index, 1);
     displayLeftStudents();
 }
@@ -1968,18 +1856,11 @@ function removeLeftStudent(index) {
 function updateNewCareStudentList() {
     const className = document.getElementById('newCareStudentClass').value;
     const studentSelect = document.getElementById('newCareStudentSelect');
-    
     studentSelect.innerHTML = '<option value="">-- ជ្រើសរើសសិស្ស --</option>';
-    
     if (className && studentData[className]) {
         studentData[className].forEach(student => {
             const option = document.createElement('option');
-            option.value = JSON.stringify({
-                name: student.name,
-                class: className,
-                id: student.id,
-                sex: student.sex
-            });
+            option.value = JSON.stringify({ name: student.name, class: className, id: student.id, sex: student.sex });
             option.textContent = `${student.id}. ${student.name} (${student.sex === 'M' ? 'ប្រុស' : 'ស្រី'})`;
             studentSelect.appendChild(option);
         });
@@ -1989,18 +1870,11 @@ function updateNewCareStudentList() {
 function updateStopCareStudentList() {
     const className = document.getElementById('stopCareStudentClass').value;
     const studentSelect = document.getElementById('stopCareStudentSelect');
-    
     studentSelect.innerHTML = '<option value="">-- ជ្រើសរើសសិស្ស --</option>';
-    
     if (className && studentData[className]) {
         studentData[className].forEach(student => {
             const option = document.createElement('option');
-            option.value = JSON.stringify({
-                name: student.name,
-                class: className,
-                id: student.id,
-                sex: student.sex
-            });
+            option.value = JSON.stringify({ name: student.name, class: className, id: student.id, sex: student.sex });
             option.textContent = `${student.id}. ${student.name} (${student.sex === 'M' ? 'ប្រុស' : 'ស្រី'})`;
             studentSelect.appendChild(option);
         });
@@ -2010,55 +1884,32 @@ function updateStopCareStudentList() {
 function addNewCareStudent() {
     const studentJson = document.getElementById('newCareStudentSelect').value;
     const date = document.getElementById('newCareStartDate').value;
-    
-    if (!studentJson || !date) {
-        alert('សូមជ្រើសរើសសិស្ស និងកាលបរិច្ឆេទ!');
-        return;
-    }
-    
+    const programValue = document.getElementById('newCareStudentProgram').value;
+    if (!studentJson || !date) { alert('សូមជ្រើសរើសសិស្ស និងកាលបរិច្ឆេទ!'); return; }
     const studentInfo = JSON.parse(studentJson);
-    
-    newCareStudentsArray.push({
-        name: studentInfo.name,
-        class: studentInfo.class,
-        id: studentInfo.id,
-        sex: studentInfo.sex,
-        date: date
-    });
-    
-    // Update totals - force update by reading current value first
+    const programTextMap = { 'full': 'ពេញកម្មវិធីសិក្សា', 'khmer': 'តែកម្មវិធីសិក្សាភាសាខ្មែរ', 'english': 'តែកម្មវិធីសិក្សាភាសាអង់គ្លេស' };
+    const finalProgram = programTextMap[programValue] || '';
+    newCareStudentsArray.push({ name: studentInfo.name, class: studentInfo.class, id: studentInfo.id, sex: studentInfo.sex, date, program: finalProgram });
     const currentTotal = parseInt(document.getElementById('careServiceTotal').value) || 0;
     const currentFemale = parseInt(document.getElementById('careServiceFemale').value) || 0;
-    
     document.getElementById('careServiceTotal').value = currentTotal + 1;
-    
-    if (studentInfo.sex === 'F') {
-        document.getElementById('careServiceFemale').value = currentFemale + 1;
-    }
-    
-    console.log('✅ បន្ថែមសិស្សមើលថែរ:', studentInfo.name, '| សរុបឥឡូវ:', currentTotal + 1);
-    
-    // Clear inputs
+    if (studentInfo.sex === 'F') document.getElementById('careServiceFemale').value = currentFemale + 1;
     document.getElementById('newCareStudentClass').value = '';
     document.getElementById('newCareStudentSelect').value = '';
+    document.getElementById('newCareStudentProgram').value = '';
     document.getElementById('newCareStartDate').value = '';
-    
     displayNewCareStudents();
     updateNewCareStudentList();
 }
 
 function displayNewCareStudents() {
     const container = document.getElementById('newCareStudentsList');
-    if (newCareStudentsArray.length === 0) {
-        container.innerHTML = '';
-        return;
-    }
-    
+    if (newCareStudentsArray.length === 0) { container.innerHTML = ''; return; }
     container.innerHTML = newCareStudentsArray.map((student, index) => `
         <div class="student-entry">
             <div class="student-entry-info">
                 <div class="student-entry-name">${student.name}</div>
-                <div class="student-entry-details">ថ្នាក់: ${student.class} | កាលបរិច្ឆេទចាប់ផ្តើម: ${student.date}</div>
+                <div class="student-entry-details">ថ្នាក់: ${student.class} | កាលបរិច្ឆេទចាប់ផ្តើម: ${student.date}${student.program ? ' | កម្មវិធី: ' + student.program : ''}</div>
             </div>
             <button class="btn-remove" onclick="removeNewCareStudent(${index})">លុប</button>
         </div>
@@ -2067,16 +1918,12 @@ function displayNewCareStudents() {
 
 function removeNewCareStudent(index) {
     const student = newCareStudentsArray[index];
-    
-    // Subtract from totals
     const currentTotal = parseInt(document.getElementById('careServiceTotal').value) || 0;
     document.getElementById('careServiceTotal').value = Math.max(0, currentTotal - 1);
-    
     if (student.sex === 'F') {
         const currentFemaleTotal = parseInt(document.getElementById('careServiceFemale').value) || 0;
         document.getElementById('careServiceFemale').value = Math.max(0, currentFemaleTotal - 1);
     }
-    
     newCareStudentsArray.splice(index, 1);
     displayNewCareStudents();
 }
@@ -2085,49 +1932,26 @@ function addStopCareStudent() {
     const studentJson = document.getElementById('stopCareStudentSelect').value;
     const date = document.getElementById('stopCareDate').value;
     const reason = document.getElementById('stopCareReason').value.trim();
-    
-    if (!studentJson || !date) {
-        alert('សូមជ្រើសរើសសិស្ស និងកាលបរិច្ឆេទ!');
-        return;
-    }
-    
+    if (!studentJson || !date) { alert('សូមជ្រើសរើសសិស្ស និងកាលបរិច្ឆេទ!'); return; }
     const studentInfo = JSON.parse(studentJson);
-    
-    stopCareStudentsArray.push({
-        name: studentInfo.name,
-        class: studentInfo.class,
-        id: studentInfo.id,
-        sex: studentInfo.sex,
-        date: date,
-        reason: reason || "មិនបានបញ្ជាក់"
-    });
-    
-    // Subtract from totals
+    stopCareStudentsArray.push({ name: studentInfo.name, class: studentInfo.class, id: studentInfo.id, sex: studentInfo.sex, date, reason: reason || "មិនបានបញ្ជាក់" });
     const currentTotal = parseInt(document.getElementById('careServiceTotal').value) || 0;
     document.getElementById('careServiceTotal').value = Math.max(0, currentTotal - 1);
-    
     if (studentInfo.sex === 'F') {
         const currentFemaleTotal = parseInt(document.getElementById('careServiceFemale').value) || 0;
         document.getElementById('careServiceFemale').value = Math.max(0, currentFemaleTotal - 1);
     }
-    
-    // Clear inputs
     document.getElementById('stopCareStudentClass').value = '';
     document.getElementById('stopCareStudentSelect').value = '';
     document.getElementById('stopCareDate').value = '';
     document.getElementById('stopCareReason').value = '';
-    
     displayStopCareStudents();
     updateStopCareStudentList();
 }
 
 function displayStopCareStudents() {
     const container = document.getElementById('stopCareStudentsList');
-    if (stopCareStudentsArray.length === 0) {
-        container.innerHTML = '';
-        return;
-    }
-    
+    if (stopCareStudentsArray.length === 0) { container.innerHTML = ''; return; }
     container.innerHTML = stopCareStudentsArray.map((student, index) => `
         <div class="student-entry">
             <div class="student-entry-info">
@@ -2141,16 +1965,12 @@ function displayStopCareStudents() {
 
 function removeStopCareStudent(index) {
     const student = stopCareStudentsArray[index];
-    
-    // Add back to totals
     const currentTotal = parseInt(document.getElementById('careServiceTotal').value) || 0;
     document.getElementById('careServiceTotal').value = currentTotal + 1;
-    
     if (student.sex === 'F') {
         const currentFemaleTotal = parseInt(document.getElementById('careServiceFemale').value) || 0;
         document.getElementById('careServiceFemale').value = currentFemaleTotal + 1;
     }
-    
     stopCareStudentsArray.splice(index, 1);
     displayStopCareStudents();
 }
@@ -2158,12 +1978,9 @@ function removeStopCareStudent(index) {
 document.getElementById('reportForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    // Validate trial students if any
     const trialCount = parseInt(document.getElementById('trialStudentsTotal').value) || 0;
     if (trialCount > 0) {
-        const incompleteTrialStudents = trialStudentsArray.filter(s => 
-            !s.name || !s.gender || !s.class || !s.program
-        );
+        const incompleteTrialStudents = trialStudentsArray.filter(s => !s.name || !s.gender || !s.class);
         if (incompleteTrialStudents.length > 0) {
             alert(`សូមបំពេញព័ត៌មានសិស្សសាកល្បងឲ្យបានគ្រប់គ្រាន់! នៅសល់ ${incompleteTrialStudents.length} នាក់`);
             return;
@@ -2185,6 +2002,7 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
         trialFemale: parseInt(document.getElementById('trialFemale').value) || 0,
         trialDate: document.getElementById('trialDate').value,
         trialDuration: document.getElementById('trialDuration').value,
+        trialProgram: document.getElementById('trialProgram').value,
         trialStudents: [...trialStudentsArray],
         careServiceTotal: parseInt(document.getElementById('careServiceTotal').value) || 0,
         careServiceFemale: parseInt(document.getElementById('careServiceFemale').value) || 0,
@@ -2214,7 +2032,6 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
     reports.push(report);
     saveReports();
     
-    // Send to Telegram if there are changes
     if (newStudentsArray.length > 0 || leftStudentsArray.length > 0 || trialStudentsArray.length > 0 || 
         newCareStudentsArray.length > 0 || stopCareStudentsArray.length > 0) {
         sendStudentChangesToTelegram(report);
@@ -2222,7 +2039,6 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
     
     alert('រក្សាទុករបាយការណ៍បានជោគជ័យ!');
     
-    // Reset arrays
     newStudentsArray = [];
     leftStudentsArray = [];
     trialStudentsArray = [];
@@ -2233,8 +2049,6 @@ document.getElementById('reportForm').addEventListener('submit', function(e) {
     displayNewCareStudents();
     displayStopCareStudents();
     document.getElementById('trialStudentsContainer').innerHTML = '';
-    
-    // Clear the input fields
     document.getElementById('newStudentClass').value = '';
     document.getElementById('newStudentName').value = '';
     document.getElementById('newStudentGender').value = '';
@@ -2254,11 +2068,10 @@ async function sendStudentChangesToTelegram(report) {
     let message = `📊 *របាយការណ៍ស្ថិតិសិស្សប្រចាំថ្ងៃ*\n\n`;
     message += `📅 *ថ្ងៃខែឆ្នាំ:* ${report.reportDate}\n\n`;
     
-    // ស្ថិតិសិស្សសរុប
+    // ✅ CHANGED: merged total + female into one line with parentheses
     message += `━━━━━━━━━━━━━━━━━━\n`;
     message += `👥 *ស្ថិតិសិស្សសរុប*\n`;
-    message += `• សិស្សសរុបទាំងព្រឹកនិងរសៀល: ${report.totalStudents} នាក់\n`;
-    message += `• សិស្សស្រីសរុប: ${report.totalFemaleStudents} នាក់\n`;
+    message += `• សិស្សសរុប: ${report.totalStudents} នាក់ (ស្រី ${report.totalFemaleStudents} នាក់)\n`;
     if (report.fullTimeStudents > 0) {
         message += `• សិស្សរៀនពេញម៉ោង: ${report.fullTimeStudents} នាក់ (ស្រី ${report.fullTimeFemale} នាក់)\n`;
     }
@@ -2270,12 +2083,13 @@ async function sendStudentChangesToTelegram(report) {
     }
     message += `\n`;
     
-    // ស្ថិតិសិស្សសាកល្បង
     if (report.trialStudents && report.trialStudents.length > 0) {
         message += `━━━━━━━━━━━━━━━━━━\n`;
         message += `🎓 *សិស្សសាកល្បង (${report.trialStudents.length} នាក់)*\n`;
         if (report.trialDate) message += `• កាលបរិច្ឆេទ: ${report.trialDate}\n`;
         if (report.trialDuration) message += `• រយៈពេល: ${report.trialDuration}\n`;
+        const trialProgramTextMap = { 'full': 'ពេញកម្មវិធីសិក្សា', 'khmer': 'តែកម្មវិធីសិក្សាភាសាខ្មែរ', 'english': 'តែកម្មវិធីសិក្សាភាសាអង់គ្លេស' };
+        if (report.trialProgram) message += `• កម្មវិធីសិក្សា: ${trialProgramTextMap[report.trialProgram] || report.trialProgram}\n`;
         message += `\n`;
         report.trialStudents.forEach((student, index) => {
             const programText = student.program === 'full' ? 'ពេញកម្មវិធីសិក្សា' : 
@@ -2288,13 +2102,11 @@ async function sendStudentChangesToTelegram(report) {
         });
     }
     
-    // សិស្សទទួលការមើលថែរ
     if (report.careServiceTotal > 0 || (report.newCareStudents && report.newCareStudents.length > 0) || 
         (report.stopCareStudents && report.stopCareStudents.length > 0)) {
         message += `━━━━━━━━━━━━━━━━━━\n`;
         message += `🍽️ *សិស្សទទួលការមើលថែរ*\n`;
         message += `• សិស្សសរុប: ${report.careServiceTotal} នាក់ (ស្រី ${report.careServiceFemale} នាក់)\n\n`;
-        
         if (report.newCareStudents && report.newCareStudents.length > 0) {
             message += `✅ *ទទួលការមើលថែរថ្មី (${report.newCareStudents.length} នាក់)*\n`;
             report.newCareStudents.forEach((student, index) => {
@@ -2303,7 +2115,6 @@ async function sendStudentChangesToTelegram(report) {
             });
             message += `\n`;
         }
-        
         if (report.stopCareStudents && report.stopCareStudents.length > 0) {
             message += `❌ *ឈប់ទទួលការមើលថែរ (${report.stopCareStudents.length} នាក់)*\n`;
             report.stopCareStudents.forEach((student, index) => {
@@ -2315,41 +2126,26 @@ async function sendStudentChangesToTelegram(report) {
         }
     }
     
-    // ពេលព្រឹក
     if (report.morningTotal > 0) {
         message += `━━━━━━━━━━━━━━━━━━\n`;
         message += `🌅 *ពេលព្រឹក*\n`;
         message += `• សិស្សសរុប: ${report.morningTotal} នាក់ (ស្រី ${report.morningFemale} នាក់)\n`;
-        if (report.morningAbsentTotal > 0) {
-            message += `• អវត្តមានសរុប: ${report.morningAbsentTotal} នាក់ (ស្រី ${report.morningAbsentFemale} នាក់)\n`;
-        }
-        if (report.morningParentPermission > 0) {
-            message += `• អាណាព្យាបាលនាក់សុំ: ${report.morningParentPermission} នាក់ (ស្រី ${report.morningParentPermissionFemale} នាក់)\n`;
-        }
-        if (report.morningSchoolContact > 0) {
-            message += `• សាលាទាក់ទងទៅសួរ: ${report.morningSchoolContact} នាក់ (ស្រី ${report.morningSchoolContactFemale} នាក់)\n`;
-        }
+        if (report.morningAbsentTotal > 0) message += `• អវត្តមានសរុប: ${report.morningAbsentTotal} នាក់ (ស្រី ${report.morningAbsentFemale} នាក់)\n`;
+        if (report.morningParentPermission > 0) message += `• អាណាព្យាបាលនាក់សុំ: ${report.morningParentPermission} នាក់ (ស្រី ${report.morningParentPermissionFemale} នាក់)\n`;
+        if (report.morningSchoolContact > 0) message += `• សាលាទាក់ទងទៅសួរ: ${report.morningSchoolContact} នាក់ (ស្រី ${report.morningSchoolContactFemale} នាក់)\n`;
         message += `\n`;
     }
     
-    // ពេលរសៀល
     if (report.afternoonTotal > 0) {
         message += `━━━━━━━━━━━━━━━━━━\n`;
         message += `🌆 *ពេលរសៀល*\n`;
         message += `• សិស្សសរុប: ${report.afternoonTotal} នាក់ (ស្រី ${report.afternoonFemale} នាក់)\n`;
-        if (report.afternoonAbsentTotal > 0) {
-            message += `• អវត្តមានសរុប: ${report.afternoonAbsentTotal} នាក់ (ស្រី ${report.afternoonAbsentFemale} នាក់)\n`;
-        }
-        if (report.afternoonParentPermission > 0) {
-            message += `• អាណាព្យាបាលនាក់សុំ: ${report.afternoonParentPermission} នាក់ (ស្រី ${report.afternoonParentPermissionFemale} នាក់)\n`;
-        }
-        if (report.afternoonSchoolContact > 0) {
-            message += `• សាលាទាក់ទងទៅសួរ: ${report.afternoonSchoolContact} នាក់ (ស្រី ${report.afternoonSchoolContactFemale} នាក់)\n`;
-        }
+        if (report.afternoonAbsentTotal > 0) message += `• អវត្តមានសរុប: ${report.afternoonAbsentTotal} នាក់ (ស្រី ${report.afternoonAbsentFemale} នាក់)\n`;
+        if (report.afternoonParentPermission > 0) message += `• អាណាព្យាបាលនាក់សុំ: ${report.afternoonParentPermission} នាក់ (ស្រី ${report.afternoonParentPermissionFemale} នាក់)\n`;
+        if (report.afternoonSchoolContact > 0) message += `• សាលាទាក់ទងទៅសួរ: ${report.afternoonSchoolContact} នាក់ (ស្រី ${report.afternoonSchoolContactFemale} នាក់)\n`;
         message += `\n`;
     }
     
-    // សិស្សចូលថ្មី
     if (report.newStudents && report.newStudents.length > 0) {
         message += `━━━━━━━━━━━━━━━━━━\n`;
         message += `✅ *សិស្សចូលថ្មី (${report.newStudents.length} នាក់)*\n\n`;
@@ -2358,14 +2154,12 @@ async function sendStudentChangesToTelegram(report) {
             message += `   • ថ្នាក់: ${student.class}\n`;
             message += `   • ភេទ: ${student.gender === 'M' ? 'ប្រុស' : 'ស្រី'}\n`;
             message += `   • កាលបរិច្ឆេទចូល: ${student.date}\n`;
-            if (student.paymentDuration) {
-                message += `   • រយៈពេលបង់ថ្លៃសិក្សា: ${student.paymentDuration}\n`;
-            }
+            if (student.program) message += `   • កម្មវិធីសិក្សា: ${student.program}\n`;
+            if (student.paymentDuration) message += `   • រយៈពេលបង់ថ្លៃសិក្សា: ${student.paymentDuration}\n`;
             message += `\n`;
         });
     }
     
-    // សិស្សឈប់
     if (report.leftStudents && report.leftStudents.length > 0) {
         message += `━━━━━━━━━━━━━━━━━━\n`;
         message += `❌ *សិស្សឈប់ (${report.leftStudents.length} នាក់)*\n\n`;
@@ -2377,7 +2171,6 @@ async function sendStudentChangesToTelegram(report) {
         });
     }
     
-    // សង្ខេប
     message += `━━━━━━━━━━━━━━━━━━\n`;
     message += `📋 *សង្ខេប*\n`;
     message += `🎓 សិស្សសាកល្បង: ${report.trialStudents ? report.trialStudents.length : 0} នាក់\n`;
@@ -2388,18 +2181,10 @@ async function sendStudentChangesToTelegram(report) {
     try {
         const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: message,
-                parse_mode: 'Markdown'
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'Markdown' })
         });
-
         const result = await response.json();
-        
         if (result.ok) {
             alert('✅ ផ្ញើព័ត៌មានទៅ Telegram រួចរាល់!');
         } else {
@@ -2414,12 +2199,7 @@ function displayReports() {
     const container = document.getElementById('reportsList');
     
     if (reports.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <h3>មិនទាន់មានរបាយការណ៍</h3>
-                <p>សូមចុចលើ "បង្កើតរបាយការណ៍ថ្មី" ដើម្បីបញ្ចូលរបាយការណ៍</p>
-            </div>
-        `;
+        container.innerHTML = `<div class="empty-state"><h3>មិនទាន់មានរបាយការណ៍</h3><p>សូមចុចលើ "បង្កើតរបាយការណ៍ថ្មី" ដើម្បីបញ្ចូលរបាយការណ៍</p></div>`;
         return;
     }
 
@@ -2435,15 +2215,10 @@ function displayReports() {
                 <div class="report-header">
                     <div class="report-title">របាយការណ៍ថ្ងៃទី ${report.reportDate}</div>
                 </div>
-                
                 <div class="report-stats">
                     <div class="stat-item">
                         <div class="stat-label">សិស្សសរុប</div>
-                        <div class="stat-value">${report.totalStudents} នាក់</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">សិស្សស្រី</div>
-                        <div class="stat-value">${report.totalFemaleStudents || 0} នាក់</div>
+                        <div class="stat-value">${report.totalStudents} នាក់ (ស្រី ${report.totalFemaleStudents || 0})</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-label">ពេលព្រឹក</div>
@@ -2461,8 +2236,7 @@ function displayReports() {
                             '<div class="stat-label" style="margin-top: 5px; font-size: 12px;">' + 
                             report.trialStudents.map(s => s.name + ' (' + s.class + ')').join(', ') + 
                             '</div>' : ''}
-                    </div>
-                    ` : ''}
+                    </div>` : ''}
                     <div class="stat-item">
                         <div class="stat-label">ចូលថ្មី</div>
                         <div class="stat-value">${newStudentsCount} នាក់</div>
@@ -2474,7 +2248,6 @@ function displayReports() {
                         ${leftStudentsCount > 0 && Array.isArray(report.leftStudents) ? '<div class="stat-label" style="margin-top: 5px; font-size: 12px;">' + report.leftStudents.map(s => s.name + ' (' + s.class + ')').join(', ') + '</div>' : ''}
                     </div>
                 </div>
-
                 <div class="action-buttons">
                     <button class="btn-main btn-small btn-danger" onclick="deleteReport('${report.id}')">លុប</button>
                 </div>
@@ -2487,12 +2260,7 @@ function displaySummary() {
     const container = document.getElementById('summaryContent');
     
     if (reports.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <h3>មិនទាន់មានទិន្នន័យសង្ខេប</h3>
-                <p>សូមបញ្ចូលរបាយការណ៍មុនសិន</p>
-            </div>
-        `;
+        container.innerHTML = `<div class="empty-state"><h3>មិនទាន់មានទិន្នន័យសង្ខេប</h3><p>សូមបញ្ចូលរបាយការណ៍មុនសិន</p></div>`;
         return;
     }
 
@@ -2504,26 +2272,11 @@ function displaySummary() {
 
     container.innerHTML = `
         <div class="summary-grid-stats">
-            <div class="summary-card">
-                <h4>ចំនួនរបាយការណ៍</h4>
-                <div class="number">${totalReports}</div>
-            </div>
-            <div class="summary-card">
-                <h4>មធ្យមសិស្សសរុប</h4>
-                <div class="number">${avgTotal}</div>
-            </div>
-            <div class="summary-card">
-                <h4>មធ្យមសិស្សស្រី</h4>
-                <div class="number">${avgFemale}</div>
-            </div>
-            <div class="summary-card">
-                <h4>សរុបសិស្សចូលថ្មី</h4>
-                <div class="number">${totalNew}</div>
-            </div>
-            <div class="summary-card">
-                <h4>សរុបសិស្សឈប់</h4>
-                <div class="number">${totalLeft}</div>
-            </div>
+            <div class="summary-card"><h4>ចំនួនរបាយការណ៍</h4><div class="number">${totalReports}</div></div>
+            <div class="summary-card"><h4>មធ្យមសិស្សសរុប</h4><div class="number">${avgTotal}</div></div>
+            <div class="summary-card"><h4>មធ្យមសិស្សស្រី</h4><div class="number">${avgFemale}</div></div>
+            <div class="summary-card"><h4>សរុបសិស្សចូលថ្មី</h4><div class="number">${totalNew}</div></div>
+            <div class="summary-card"><h4>សរុបសិស្សឈប់</h4><div class="number">${totalLeft}</div></div>
         </div>
     `;
 }
