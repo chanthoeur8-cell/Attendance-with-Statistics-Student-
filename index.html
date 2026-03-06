@@ -93,6 +93,13 @@
         .sync-banner span { color: #0c5460; font-size: 15px; }
         .save-indicator { display:inline-block; margin-left:10px; font-size:13px; color:#1cc88a; opacity:0; transition:opacity 0.5s; }
         .save-indicator.show { opacity:1; }
+        .female-inline-row { display:flex; gap:12px; align-items:center; }
+        .female-inline-row input.main-input { flex:1; min-width:0; padding:12px; border:2px solid #e0e0e0; border-radius:8px; font-family:inherit; font-size:15px; }
+        .female-inline-row input.main-input:focus { outline:none; border-color:#667eea; }
+        .female-inline-badge { display:flex; align-items:center; gap:6px; white-space:nowrap; background:#fff0f6; border:2px solid #e91e8c44; border-radius:8px; padding:8px 12px; }
+        .female-inline-badge label { color:#c2185b; font-size:13px; font-weight:600; margin:0; white-space:nowrap; }
+        .female-inline-badge input { width:70px; padding:4px 8px; border:1.5px solid #e91e8c66; border-radius:6px; font-family:inherit; font-size:14px; color:#c2185b; font-weight:bold; text-align:center; }
+        .female-inline-badge input:focus { outline:none; border-color:#c2185b; }
         @media (max-width: 768px) {
             .attendance-container { flex-direction: column; height: auto; }
             .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e3e6f0; }
@@ -100,6 +107,7 @@
             .form-grid { grid-template-columns: 1fr; }
             .report-stats { grid-template-columns: 1fr; }
             .main-tabs { flex-direction: column; }
+            .female-inline-row { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
@@ -230,11 +238,18 @@
                     <div class="form-section">
                         <h3>សិស្សទទួលការមើលថែរ</h3>
                         <div class="form-grid">
-                            <div class="form-group">
+                            <!-- ✅ UPDATED: careServiceTotal now shows female field inline -->
+                            <div class="form-group" style="grid-column:1/-1;">
                                 <label>សិស្សទទួលការមើលថែរសរុប (នាក់)</label>
-                                <input type="number" id="careServiceTotal" min="0" value="0" oninput="saveFormState()">
+                                <div class="female-inline-row">
+                                    <input type="number" id="careServiceTotal" class="main-input" min="0" value="0" oninput="saveFormState()">
+                                    <div class="female-inline-badge">
+                                        <label for="careServiceFemale">👧 ស្រី</label>
+                                        <input type="number" id="careServiceFemale" min="0" value="0" oninput="saveFormState()" placeholder="0">
+                                        <span style="color:#c2185b;font-size:13px;font-weight:600;">នាក់</span>
+                                    </div>
+                                </div>
                             </div>
-                            <input type="number" id="careServiceFemale" min="0" value="0" style="display:none;">
                         </div>
                         <h4 style="color:#667eea;margin:20px 0 10px 0;">សិស្សទទួលការមើលថែរថ្មី</h4>
                         <div id="newCareStudentsList"></div>
@@ -607,13 +622,18 @@ function calculateAbsenceFromRecords(sessionType) {
 }
 
 // ========== SYNC ==========
+// ✅ FIX: syncAttendanceToReport now reads totals directly from studentData
+// (which already includes added/removed students), so the count is always accurate.
 function syncAttendanceToReport() {
     const t = calculateAllClassTotals();
     const morningAbs = calculateAbsenceFromRecords('morning');
     const afternoonAbs = calculateAbsenceFromRecords('afternoon');
+
+    // Use live studentData totals (already updated when students are added/removed)
     document.getElementById('totalStudents').value = t.totalCount;
     document.getElementById('totalFemaleStudents').value = t.totalFemaleCount;
     syncFemaleDisplay();
+
     document.getElementById('morningTotal').value = t.morningTotal;
     document.getElementById('morningFemale').value = t.morningFemale;
     document.getElementById('morningAbsentTotal').value = morningAbs.absent;
@@ -627,6 +647,11 @@ function syncAttendanceToReport() {
     document.getElementById('afternoonParentPermission').value = afternoonAbs.permission;
     document.getElementById('afternoonParentPermissionFemale').value = afternoonAbs.permissionFemale;
     saveFormState();
+}
+
+// ✅ NEW: Call this after every add/remove student to keep totals in sync automatically
+function autoSyncTotals() {
+    syncAttendanceToReport();
 }
 
 function manualSyncAttendance() {
@@ -757,19 +782,13 @@ function addNewStudent() {
     newStudentsArray.push({name, class:className, gender, date, paymentDuration:finalPayment, program:programMap[programValue]||''});
     if (!studentData[className]) studentData[className] = [];
     studentData[className].push({id:Date.now().toString().slice(-3), name, sex:gender});
-    const cur = parseInt(document.getElementById('totalStudents').value)||0;
-    document.getElementById('totalStudents').value = cur+1;
-    if (gender==='F') { document.getElementById('totalFemaleStudents').value = (parseInt(document.getElementById('totalFemaleStudents').value)||0)+1; }
-    syncFemaleDisplay();
-    if (isMorningClass(className)) { document.getElementById('morningTotal').value = (parseInt(document.getElementById('morningTotal').value)||0)+1; if(gender==='F') document.getElementById('morningFemale').value=(parseInt(document.getElementById('morningFemale').value)||0)+1; }
-    if (isAfternoonClass(className)) { document.getElementById('afternoonTotal').value = (parseInt(document.getElementById('afternoonTotal').value)||0)+1; if(gender==='F') document.getElementById('afternoonFemale').value=(parseInt(document.getElementById('afternoonFemale').value)||0)+1; }
     ['newStudentName','newStudentDate','customPaymentDuration'].forEach(id=>document.getElementById(id).value='');
     ['newStudentGender','newStudentProgram','newStudentPaymentDuration','newStudentClass'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('customPaymentField').style.display='none';
     displayNewStudents(); populateClassDropdowns(); buildClassList();
-    // ✅ FIX: Re-render attendance if this class is currently selected
     if (selectedClassName === className) renderStudents(className);
-    saveFormState();
+    // ✅ FIX: Recalculate all totals from live studentData
+    autoSyncTotals();
 }
 
 function displayNewStudents() {
@@ -780,26 +799,19 @@ function displayNewStudents() {
 
 function removeNewStudent(index) {
     const s = newStudentsArray[index];
-    // ✅ FIX: Remove from studentData too
     if (studentData[s.class]) {
         studentData[s.class] = studentData[s.class].filter(st => st.name !== s.name);
     }
-    // Clean up attendance record for this student
     if (attendanceRecords[s.class]) {
         delete attendanceRecords[s.class][s.name];
     }
-    document.getElementById('totalStudents').value = Math.max(0,(parseInt(document.getElementById('totalStudents').value)||0)-1);
-    if (s.gender==='F') document.getElementById('totalFemaleStudents').value = Math.max(0,(parseInt(document.getElementById('totalFemaleStudents').value)||0)-1);
-    syncFemaleDisplay();
-    if (isMorningClass(s.class)) { document.getElementById('morningTotal').value=Math.max(0,(parseInt(document.getElementById('morningTotal').value)||0)-1); if(s.gender==='F') document.getElementById('morningFemale').value=Math.max(0,(parseInt(document.getElementById('morningFemale').value)||0)-1); }
-    if (isAfternoonClass(s.class)) { document.getElementById('afternoonTotal').value=Math.max(0,(parseInt(document.getElementById('afternoonTotal').value)||0)-1); if(s.gender==='F') document.getElementById('afternoonFemale').value=Math.max(0,(parseInt(document.getElementById('afternoonFemale').value)||0)-1); }
     newStudentsArray.splice(index,1);
     displayNewStudents();
     buildClassList();
     populateClassDropdowns();
-    // ✅ FIX: Re-render attendance if affected class is selected
     if (selectedClassName === s.class) renderStudents(s.class);
-    saveFormState();
+    // ✅ FIX: Recalculate all totals from live studentData
+    autoSyncTotals();
 }
 
 // ========== LEFT STUDENTS ==========
@@ -819,29 +831,20 @@ function addLeftStudent() {
     if (!studentJson || !date) { alert('សូមជ្រើសរើសសិស្ស និងកាលបរិច្ឆេទ!'); return; }
     const si = JSON.parse(studentJson);
     leftStudentsArray.push({name:si.name, class:si.class, id:si.id, sex:si.sex, date, reason:reason||'មិនបានបញ្ជាក់'});
-
-    // ✅ FIX: Remove student from studentData so they disappear from attendance
     if (studentData[si.class]) {
         studentData[si.class] = studentData[si.class].filter(s => s.name !== si.name);
     }
-    // Clean up attendance record for this student
     if (attendanceRecords[si.class]) {
         delete attendanceRecords[si.class][si.name];
     }
-
-    document.getElementById('totalStudents').value = Math.max(0,(parseInt(document.getElementById('totalStudents').value)||0)-1);
-    if (si.sex==='F') document.getElementById('totalFemaleStudents').value = Math.max(0,(parseInt(document.getElementById('totalFemaleStudents').value)||0)-1);
-    syncFemaleDisplay();
-    if (isMorningClass(si.class)) { document.getElementById('morningTotal').value=Math.max(0,(parseInt(document.getElementById('morningTotal').value)||0)-1); if(si.sex==='F') document.getElementById('morningFemale').value=Math.max(0,(parseInt(document.getElementById('morningFemale').value)||0)-1); }
-    if (isAfternoonClass(si.class)) { document.getElementById('afternoonTotal').value=Math.max(0,(parseInt(document.getElementById('afternoonTotal').value)||0)-1); if(si.sex==='F') document.getElementById('afternoonFemale').value=Math.max(0,(parseInt(document.getElementById('afternoonFemale').value)||0)-1); }
     ['leftStudentClass','leftStudentSelect','leftStudentDate','leftReason'].forEach(id=>document.getElementById(id).value='');
     displayLeftStudents();
     updateLeftStudentList();
     buildClassList();
     populateClassDropdowns();
-    // ✅ FIX: Re-render attendance immediately if the affected class is currently selected
     if (selectedClassName === si.class) renderStudents(si.class);
-    saveFormState();
+    // ✅ FIX: Recalculate all totals from live studentData
+    autoSyncTotals();
 }
 
 function displayLeftStudents() {
@@ -852,25 +855,18 @@ function displayLeftStudents() {
 
 function removeLeftStudent(index) {
     const s = leftStudentsArray[index];
-    // ✅ FIX: Add student back to studentData
     if (!studentData[s.class]) studentData[s.class] = [];
-    // Only add back if not already there (avoid duplicates)
     const alreadyExists = studentData[s.class].some(st => st.name === s.name);
     if (!alreadyExists) {
         studentData[s.class].push({id: s.id, name: s.name, sex: s.sex});
     }
-    document.getElementById('totalStudents').value = (parseInt(document.getElementById('totalStudents').value)||0)+1;
-    if (s.sex==='F') document.getElementById('totalFemaleStudents').value=(parseInt(document.getElementById('totalFemaleStudents').value)||0)+1;
-    syncFemaleDisplay();
-    if (isMorningClass(s.class)) { document.getElementById('morningTotal').value=(parseInt(document.getElementById('morningTotal').value)||0)+1; if(s.sex==='F') document.getElementById('morningFemale').value=(parseInt(document.getElementById('morningFemale').value)||0)+1; }
-    if (isAfternoonClass(s.class)) { document.getElementById('afternoonTotal').value=(parseInt(document.getElementById('afternoonTotal').value)||0)+1; if(s.sex==='F') document.getElementById('afternoonFemale').value=(parseInt(document.getElementById('afternoonFemale').value)||0)+1; }
     leftStudentsArray.splice(index,1);
     displayLeftStudents();
     buildClassList();
     populateClassDropdowns();
-    // ✅ FIX: Re-render attendance if affected class is selected
     if (selectedClassName === s.class) renderStudents(s.class);
-    saveFormState();
+    // ✅ FIX: Recalculate all totals from live studentData
+    autoSyncTotals();
 }
 
 // ========== CARE SERVICE ==========
@@ -1112,4 +1108,3 @@ window.onload = async () => {
 </script>
 </body>
 </html>
-
