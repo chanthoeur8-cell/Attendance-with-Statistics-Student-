@@ -1012,9 +1012,7 @@ async function sendStudentChangesToTelegram(report) {
         if(report.newCareStudents?.length>0) { msg += `\n✅ ថ្មី (${report.newCareStudents.length} នាក់)\n`; report.newCareStudents.forEach((s,i)=>{ msg += `${i+1}. ${s.name} (${s.class}) | ចាប់: ${s.date}\n`; }); }
         if(report.stopCareStudents?.length>0) { msg += `\n❌ ឈប់ (${report.stopCareStudents.length} នាក់)\n`; report.stopCareStudents.forEach((s,i)=>{ msg += `${i+1}. ${s.name} (${s.class}) | ${s.date} | ${s.reason}\n`; }); }
     }
-    if(report.morningTotal>0) { msg += `\n━━━━━━━━━━━━━━━━━━\n🌅 *ព្រឹក*\n• សរុប: ${report.morningTotal} នាក់ (ស្រី ${report.morningFemale} នាក់)\n`; if(report.morningAbsentTotal>0) msg += `• អវត្តមាន: ${report.morningAbsentTotal} នាក់\n`; if(report.morningParentPermission>0) msg += `• ច្បាប់: ${report.morningParentPermission} នាក់\n`; }
-    if(report.afternoonTotal>0) { msg += `\n━━━━━━━━━━━━━━━━━━\n🌆 *រសៀល*\n• សរុប: ${report.afternoonTotal} នាក់ (ស្រី ${report.afternoonFemale} នាក់)\n`; if(report.afternoonAbsentTotal>0) msg += `• អវត្តមាន: ${report.afternoonAbsentTotal} នាក់\n`; if(report.afternoonParentPermission>0) msg += `• ច្បាប់: ${report.afternoonParentPermission} នាក់\n`; }
-    if(report.newStudents?.length>0) {
+   if(report.newStudents?.length>0) {
         msg += `\n━━━━━━━━━━━━━━━━━━\n✅ *ចូលថ្មី (${report.newStudents.length} នាក់)*\n`;
         report.newStudents.forEach((s,i)=>{ msg += `\n${i+1}. ${s.name} (${s.class})\n   • ${s.gender==='M'?'ប្រុស':'ស្រី'} | ${s.date}`; if(s.program) msg+=` | ${s.program}`; if(s.paymentDuration) msg+=` | ${s.paymentDuration}`; msg+='\n'; });
     }
@@ -1108,4 +1106,5 @@ window.onload = async () => {
 </script>
 </body>
 </html>
+
 
